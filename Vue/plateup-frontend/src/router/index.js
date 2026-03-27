@@ -6,11 +6,11 @@ import HomeView from '../views/HomeView.vue'
 import ExploreView from '../views/ExploreView.vue'
 import CreateView from '../views/CreateView.vue'
 import ProfileView from '../views/ProfileView.vue'
+import EditProfileView from '../views/EditProfileView.vue'
 import RecipeDetailView from '../views/RecipeDetailView.vue'
 import UserProfileView from '../views/UserProfileView.vue'
 import ConnectionsView from '../views/ConnectionsView.vue'
 import CookingView from '../views/CookingView.vue'
-
 
 const routes = [
   {
@@ -45,6 +45,11 @@ const routes = [
     component: ProfileView,
   },
   {
+    path: '/profile/edit',
+    name: 'edit-profile',
+    component: EditProfileView,
+  },
+  {
     path: '/users/:id/connections',
     name: 'connections',
     component: ConnectionsView,
@@ -63,11 +68,11 @@ const routes = [
     props: true,
   },
   {
-  path: '/recipes/:id/cook',
-  name: 'cooking',
-  component: CookingView,
-  props: true,
-},
+    path: '/recipes/:id/cook',
+    name: 'cooking',
+    component: CookingView,
+    props: true,
+  },
 ]
 
 const router = createRouter({

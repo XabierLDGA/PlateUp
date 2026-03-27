@@ -112,6 +112,21 @@ export const useAuthStore = defineStore('auth', {
       }
     },
 
+    async refreshCurrentUser() {
+      if (!this.currentUser?.id) return null
+
+      const response = await userService.getById(this.currentUser.id)
+      const freshUser = response.data || null
+
+      if (!freshUser?.id) {
+        this.logout()
+        return null
+      }
+
+      this.setSessionUser(freshUser)
+      return freshUser
+    },
+
     logout() {
       this.currentUser = null
       this.isAuthenticated = false

@@ -8,4 +8,5 @@ import java.util.List;
 
 public interface FollowRepository extends JpaRepository<Follow, FollowId> {
     List<Follow> findByFollowedIdAndStatus(Long followedId, String status);
+    void deleteByFollowerIdOrFollowedId(Long followerId, Long followedId);
 }

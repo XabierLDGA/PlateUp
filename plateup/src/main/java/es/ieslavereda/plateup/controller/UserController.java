@@ -2,10 +2,25 @@ package es.ieslavereda.plateup.controller;
 
 import es.ieslavereda.plateup.dto.LoginRequest;
 import es.ieslavereda.plateup.dto.RegisterRequest;
+import es.ieslavereda.plateup.model.Collection;
+import es.ieslavereda.plateup.model.Recipe;
 import es.ieslavereda.plateup.model.User;
+import es.ieslavereda.plateup.repository.CollectionRecipeRepository;
+import es.ieslavereda.plateup.repository.CollectionRepository;
+import es.ieslavereda.plateup.repository.CommentRepository;
+import es.ieslavereda.plateup.repository.CookedRecipeRepository;
+import es.ieslavereda.plateup.repository.FollowRepository;
+import es.ieslavereda.plateup.repository.LikeRepository;
+import es.ieslavereda.plateup.repository.RecipeIngredientRepository;
+import es.ieslavereda.plateup.repository.RecipeRepository;
+import es.ieslavereda.plateup.repository.RecipeStepRepository;
+import es.ieslavereda.plateup.repository.RecipeUtensilRepository;
+import es.ieslavereda.plateup.repository.UserAchievementRepository;
+import es.ieslavereda.plateup.repository.UserChallengeRepository;
 import es.ieslavereda.plateup.repository.UserRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
@@ -20,9 +35,47 @@ import java.util.Optional;
 public class UserController {
 
     private final UserRepository repository;
+    private final RecipeRepository recipeRepository;
+    private final RecipeIngredientRepository recipeIngredientRepository;
+    private final RecipeStepRepository recipeStepRepository;
+    private final RecipeUtensilRepository recipeUtensilRepository;
+    private final LikeRepository likeRepository;
+    private final CommentRepository commentRepository;
+    private final CookedRecipeRepository cookedRecipeRepository;
+    private final FollowRepository followRepository;
+    private final UserAchievementRepository userAchievementRepository;
+    private final UserChallengeRepository userChallengeRepository;
+    private final CollectionRepository collectionRepository;
+    private final CollectionRecipeRepository collectionRecipeRepository;
 
-    public UserController(UserRepository repository) {
+    public UserController(
+            UserRepository repository,
+            RecipeRepository recipeRepository,
+            RecipeIngredientRepository recipeIngredientRepository,
+            RecipeStepRepository recipeStepRepository,
+            RecipeUtensilRepository recipeUtensilRepository,
+            LikeRepository likeRepository,
+            CommentRepository commentRepository,
+            CookedRecipeRepository cookedRecipeRepository,
+            FollowRepository followRepository,
+            UserAchievementRepository userAchievementRepository,
+            UserChallengeRepository userChallengeRepository,
+            CollectionRepository collectionRepository,
+            CollectionRecipeRepository collectionRecipeRepository
+    ) {
         this.repository = repository;
+        this.recipeRepository = recipeRepository;
+        this.recipeIngredientRepository = recipeIngredientRepository;
+        this.recipeStepRepository = recipeStepRepository;
+        this.recipeUtensilRepository = recipeUtensilRepository;
+        this.likeRepository = likeRepository;
+        this.commentRepository = commentRepository;
+        this.cookedRecipeRepository = cookedRecipeRepository;
+        this.followRepository = followRepository;
+        this.userAchievementRepository = userAchievementRepository;
+        this.userChallengeRepository = userChallengeRepository;
+        this.collectionRepository = collectionRepository;
+        this.collectionRecipeRepository = collectionRecipeRepository;
     }
 
     @GetMapping
@@ -118,17 +171,99 @@ public class UserController {
     }
 
     @PutMapping("/{id}")
-    public User update(@PathVariable Long id, @RequestBody User user) {
-        user.setId(id);
-        return repository.save(user);
+    public ResponseEntity<?> update(@PathVariable Long id, @RequestBody User user) {
+        Optional<User> existingOptional = repository.findById(id);
+
+        if (existingOptional.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        User existing = existingOptional.get();
+
+        existing.setUsername(valueOrDefault(user.getUsername(), existing.getUsername()));
+        existing.setEmail(valueOrDefault(user.getEmail(), existing.getEmail()));
+        existing.setPasswordHash(valueOrDefault(user.getPasswordHash(), existing.getPasswordHash()));
+        existing.setDisplayName(valueOrDefault(user.getDisplayName(), existing.getDisplayName()));
+        existing.setBio(valueOrDefault(user.getBio(), existing.getBio()));
+        existing.setAvatarUrl(valueOrDefault(user.getAvatarUrl(), existing.getAvatarUrl()));
+        existing.setVisibilityDefault(normalizeVisibility(valueOrDefault(user.getVisibilityDefault(), existing.getVisibilityDefault())));
+        existing.setCreatedAt(existing.getCreatedAt() == null ? LocalDateTime.now() : existing.getCreatedAt());
+        existing.setUpdatedAt(LocalDateTime.now());
+
+        User updatedUser = repository.save(existing);
+        return ResponseEntity.ok(updatedUser);
     }
 
     @DeleteMapping("/{id}")
-    public void delete(@PathVariable Long id) {
+    @Transactional
+    public ResponseEntity<?> delete(@PathVariable Long id) {
+        Optional<User> userOptional = repository.findById(id);
+
+        if (userOptional.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        List<Recipe> userRecipes = recipeRepository.findByUserIdOrderByCreatedAtDescIdDesc(id);
+        List<Long> recipeIds = userRecipes.stream()
+                .map(Recipe::getId)
+                .toList();
+
+        List<Collection> collections = collectionRepository.findByUserId(id);
+        List<Long> collectionIds = collections.stream()
+                .map(Collection::getId)
+                .toList();
+
+        if (!collectionIds.isEmpty()) {
+            collectionRecipeRepository.deleteByCollectionIds(collectionIds);
+        }
+
+        if (!recipeIds.isEmpty()) {
+            collectionRecipeRepository.deleteByRecipeIds(recipeIds);
+            likeRepository.deleteByRecipeIdIn(recipeIds);
+            commentRepository.deleteByRecipeIdIn(recipeIds);
+            cookedRecipeRepository.deleteByRecipeIdIn(recipeIds);
+            recipeIngredientRepository.deleteByRecipeIdIn(recipeIds);
+            recipeStepRepository.deleteByRecipeIdIn(recipeIds);
+            recipeUtensilRepository.deleteByRecipeIds(recipeIds);
+            recipeRepository.deleteAll(userRecipes);
+        }
+
+        likeRepository.deleteByUserId(id);
+        commentRepository.deleteByUserId(id);
+        cookedRecipeRepository.deleteByUserId(id);
+        followRepository.deleteByFollowerIdOrFollowedId(id, id);
+        userAchievementRepository.deleteByUserId(id);
+        userChallengeRepository.deleteByUserId(id);
+        collectionRepository.deleteByUserId(id);
         repository.deleteById(id);
+
+        return ResponseEntity.ok(success("Account deleted successfully."));
+    }
+
+    private String valueOrDefault(String incomingValue, String currentValue) {
+        return incomingValue != null ? incomingValue : currentValue;
+    }
+
+    private String normalizeVisibility(String visibilityDefault) {
+        if (visibilityDefault == null || visibilityDefault.isBlank()) {
+            return "public";
+        }
+
+        String normalized = visibilityDefault.trim().toLowerCase();
+        if (normalized.equals("private")) {
+            return "followers";
+        }
+
+        return normalized.equals("followers") || normalized.equals("public") ? normalized : "public";
     }
 
     private Map<String, String> error(String message) {
+        Map<String, String> body = new HashMap<>();
+        body.put("message", message);
+        return body;
+    }
+
+    private Map<String, String> success(String message) {
         Map<String, String> body = new HashMap<>();
         body.put("message", message);
         return body;

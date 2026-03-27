@@ -222,7 +222,11 @@
       <h2 class="text-lg font-bold text-gray-900">Settings</h2>
 
       <div class="mt-4 space-y-3">
-        <button class="flex w-full items-center justify-between rounded-2xl bg-gray-50 px-4 py-4 text-sm font-semibold text-gray-700">
+        <button
+          type="button"
+          class="flex w-full items-center justify-between rounded-2xl bg-gray-50 px-4 py-4 text-sm font-semibold text-gray-700 transition hover:bg-gray-100"
+          @click="goToEditProfile"
+        >
           <span>Edit profile</span>
           <span>›</span>
         </button>
@@ -373,6 +377,10 @@ function formatElapsed(seconds) {
 
 function goToCurrentUserProfile() {
   router.push({ name: 'profile' })
+}
+
+function goToEditProfile() {
+  router.push({ name: 'edit-profile' })
 }
 
 function openConnections(tab) {
