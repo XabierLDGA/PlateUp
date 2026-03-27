@@ -1,0 +1,47 @@
+🧩 Core de recetas
+
+Users(id, username, email, password_hash, display_name, bio, avatar_url, visibility_default, created_at, updated_at)
+
+Recipes(id, user_id, title, description, servings, total_minutes, difficulty, created_at, updated_at)
+
+RecipeSteps(id, recipe_id, order_index, text, timer_seconds, media_url)
+
+Ingredients(id, name, unit_default)
+
+RecipeIngredients(recipe_id, ingredient_id, quantity_decimal, unit, notes)
+
+Utensils(id, name)
+
+RecipeUtensils(recipe_id, utensil_id)
+
+Media(id, owner_user_id, recipe_id, url, type, order_index, created_at)
+
+💬 Social
+
+Follows(follower_id, followed_id, created_at)
+
+Likes(user_id, recipe_id, created_at)
+
+Comments(id, user_id, recipe_id, text, created_at)
+
+Collections(id, user_id, name, is_public, created_at)
+
+CollectionRecipes(collection_id, recipe_id, order_index)
+
+🏆 Gamificación
+
+Achievements(id, name, description, icon_url, category, points, created_at)
+
+UserAchievements(user_id, achievement_id, earned_at, level)
+
+Challenges(id, name, description, start_date, end_date, goal, reward_points)
+
+UserChallenges(user_id, challenge_id, progress, status, started_at, finished_at)
+
+⚙️ Complementarias (opcional)
+
+Notifications(id, recipient_user_id, actor_user_id, recipe_id, type, read_at, created_at)
+
+Reports(id, reporter_user_id, target_user_id, recipe_id, reason, created_at)
+
+AuditLogs(id, actor_user_id, entity_type, entity_id, action, created_at)
