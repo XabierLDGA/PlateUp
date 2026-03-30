@@ -1,11 +1,12 @@
 package es.ieslavereda.plateup.controller;
 
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
 import es.ieslavereda.plateup.model.Follow;
 import es.ieslavereda.plateup.model.FollowId;
 import es.ieslavereda.plateup.repository.FollowRepository;
+import es.ieslavereda.plateup.service.AchievementUnlockService;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -18,9 +19,11 @@ import java.util.Optional;
 public class FollowController {
 
     private final FollowRepository repository;
+    private final AchievementUnlockService achievementUnlockService;
 
-    public FollowController(FollowRepository repository) {
+    public FollowController(FollowRepository repository, AchievementUnlockService achievementUnlockService) {
         this.repository = repository;
+        this.achievementUnlockService = achievementUnlockService;
     }
 
     @GetMapping
@@ -55,6 +58,11 @@ public class FollowController {
         }
 
         Follow savedFollow = repository.save(follow);
+
+        if ("accepted".equals(savedFollow.getStatus())) {
+            achievementUnlockService.checkFollowerAchievements(savedFollow.getFollowedId());
+        }
+
         return ResponseEntity.status(HttpStatus.CREATED).body(savedFollow);
     }
 
@@ -77,6 +85,11 @@ public class FollowController {
                     }
 
                     Follow savedFollow = repository.save(existingFollow);
+
+                    if ("accepted".equals(savedFollow.getStatus())) {
+                        achievementUnlockService.checkFollowerAchievements(savedFollow.getFollowedId());
+                    }
+
                     return ResponseEntity.ok(savedFollow);
                 })
                 .orElseGet(() -> ResponseEntity.notFound().build());
@@ -90,6 +103,7 @@ public class FollowController {
                 .map(existingFollow -> {
                     existingFollow.setStatus("accepted");
                     Follow savedFollow = repository.save(existingFollow);
+                    achievementUnlockService.checkFollowerAchievements(savedFollow.getFollowedId());
                     return ResponseEntity.ok(savedFollow);
                 })
                 .orElseGet(() -> ResponseEntity.notFound().build());

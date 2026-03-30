@@ -5,6 +5,10 @@ export default {
     return api.get('/userachievements')
   },
 
+  getByUserId(userId) {
+    return api.get(`/userachievements/user/${userId}`)
+  },
+
   getById(userId, achievementId) {
     return api.get(`/userachievements/${userId}/${achievementId}`)
   },

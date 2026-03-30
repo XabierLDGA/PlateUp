@@ -28,6 +28,10 @@ export default {
       createdAt: payload.createdAt || formatDateTimeForBackend(),
     }
 
+    if (payload.status) {
+      normalizedPayload.status = payload.status
+    }
+
     return api.post('/follows', normalizedPayload)
   },
 

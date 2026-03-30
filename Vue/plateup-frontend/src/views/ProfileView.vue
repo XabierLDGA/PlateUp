@@ -190,7 +190,14 @@
     <section v-else class="space-y-4">
       <h2 class="text-xl font-bold text-gray-900">Achievements</h2>
 
-      <div class="space-y-3">
+      <div
+        v-if="earnedAchievements.length === 0"
+        class="rounded-[28px] bg-white p-6 text-center text-sm text-gray-500 shadow-sm ring-1 ring-black/5"
+      >
+        You still have no achievements unlocked.
+      </div>
+
+      <div v-else class="space-y-3">
         <article
           v-for="achievement in earnedAchievements"
           :key="achievement.id"
@@ -327,12 +334,20 @@ const userAvatar = computed(() => getUserAvatar(currentUser.value))
 
 const followersCount = computed(() => {
   if (!currentUser.value?.id) return 0
-  return follows.value.filter((item) => Number(item.followedId) === Number(currentUser.value.id)).length
+  return follows.value.filter(
+    (item) =>
+      Number(item.followedId) === Number(currentUser.value.id) &&
+      item.status === 'accepted'
+  ).length
 })
 
 const followingCount = computed(() => {
   if (!currentUser.value?.id) return 0
-  return follows.value.filter((item) => Number(item.followerId) === Number(currentUser.value.id)).length
+  return follows.value.filter(
+    (item) =>
+      Number(item.followerId) === Number(currentUser.value.id) &&
+      item.status === 'accepted'
+  ).length
 })
 
 const earnedAchievements = computed(() => {
@@ -455,7 +470,7 @@ async function loadData() {
     recipeService.getByUserId(userId),
     followService.getAll(),
     achievementService.getAll(),
-    userAchievementService.getAll(),
+    userAchievementService.getByUserId(userId),
     cookedRecipeService.getByUserId(userId),
     recipeService.getAll(),
   ])

@@ -15,6 +15,8 @@ public interface CookedRecipeRepository extends JpaRepository<CookedRecipe, Long
 
     boolean existsByUserIdAndRecipeId(Long userId, Long recipeId);
 
+    long countByUserId(Long userId);
+
     void deleteByUserIdAndRecipeId(Long userId, Long recipeId);
 
     void deleteByUserId(Long userId);

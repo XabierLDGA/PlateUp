@@ -144,7 +144,7 @@ const followedUserIds = computed(() => {
   if (!currentUserId.value) return []
 
   return follows.value
-    .filter((follow) => Number(follow.followerId) === currentUserId.value)
+    .filter((follow) => Number(follow.followerId) === currentUserId.value && follow.status === 'accepted')
     .map((follow) => Number(follow.followedId))
 })
 
@@ -268,6 +268,9 @@ async function toggleRecipeLike(recipe) {
       const response = await likeService.create(payload)
 
       likes.value.push(response.data || payload)
+
+      const refreshedAchievements = await userAchievementService.getByUserId(currentUserId.value)
+      userAchievements.value = refreshedAchievements.data || []
     }
   } catch (error) {
     console.error('Error toggling like in HomeView:', error)
@@ -287,14 +290,13 @@ async function loadData() {
   try {
     await authStore.initialize()
 
-    const [recipesResponse, usersResponse, likesResponse, followsResponse, achievementsResponse, userAchievementsResponse] =
+    const [recipesResponse, usersResponse, likesResponse, followsResponse, achievementsResponse] =
       await Promise.all([
         recipeService.getAll(),
         userService.getAll(),
         likeService.getAll(),
         followService.getAll(),
         achievementService.getAll(),
-        userAchievementService.getAll(),
       ])
 
     recipes.value = recipesResponse.data || []
@@ -302,7 +304,13 @@ async function loadData() {
     likes.value = likesResponse.data || []
     follows.value = followsResponse.data || []
     achievements.value = achievementsResponse.data || []
-    userAchievements.value = userAchievementsResponse.data || []
+
+    if (currentUserId.value) {
+      const userAchievementsResponse = await userAchievementService.getByUserId(currentUserId.value)
+      userAchievements.value = userAchievementsResponse.data || []
+    } else {
+      userAchievements.value = []
+    }
   } catch (error) {
     console.error('Error loading home data:', error)
     errorMessage.value = 'Could not load recipes right now.'

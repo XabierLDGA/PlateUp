@@ -231,12 +231,12 @@ const isOwnProfile = computed(() => {
 
 const followersCount = computed(() => {
   if (!numericUserId.value) return 0
-  return follows.value.filter((item) => Number(item.followedId) === numericUserId.value).length
+  return follows.value.filter((item) => Number(item.followedId) === numericUserId.value && item.status === 'accepted').length
 })
 
 const followingCount = computed(() => {
   if (!numericUserId.value) return 0
-  return follows.value.filter((item) => Number(item.followerId) === numericUserId.value).length
+  return follows.value.filter((item) => Number(item.followerId) === numericUserId.value && item.status === 'accepted').length
 })
 
 const isFollowingVisitedUser = computed(() => {
@@ -245,7 +245,8 @@ const isFollowingVisitedUser = computed(() => {
   return follows.value.some(
     (item) =>
       Number(item.followerId) === currentUserId.value &&
-      Number(item.followedId) === numericUserId.value
+      Number(item.followedId) === numericUserId.value &&
+      item.status === 'accepted'
   )
 })
 
@@ -322,6 +323,7 @@ async function toggleFollow() {
       follows.value.push({
         followerId: currentUserId.value,
         followedId: numericUserId.value,
+        status: 'accepted',
       })
     }
   } catch (error) {
@@ -356,7 +358,7 @@ async function loadUserProfile() {
       recipeService.getByUserId(userId),
       followService.getAll(),
       achievementService.getAll(),
-      userAchievementService.getAll(),
+      userAchievementService.getByUserId(userId),
     ])
 
     if (!userResponse.data) {

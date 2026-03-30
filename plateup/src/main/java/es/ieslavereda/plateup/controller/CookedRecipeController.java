@@ -2,6 +2,7 @@ package es.ieslavereda.plateup.controller;
 
 import es.ieslavereda.plateup.model.CookedRecipe;
 import es.ieslavereda.plateup.repository.CookedRecipeRepository;
+import es.ieslavereda.plateup.service.AchievementUnlockService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
@@ -15,18 +16,18 @@ import java.util.List;
 public class CookedRecipeController {
 
     private final CookedRecipeRepository repository;
+    private final AchievementUnlockService achievementUnlockService;
 
-    public CookedRecipeController(CookedRecipeRepository repository) {
+    public CookedRecipeController(CookedRecipeRepository repository, AchievementUnlockService achievementUnlockService) {
         this.repository = repository;
+        this.achievementUnlockService = achievementUnlockService;
     }
 
-    /** All cooked entries for a specific user */
     @GetMapping("/user/{userId}")
     public List<CookedRecipe> getByUser(@PathVariable Long userId) {
         return repository.findByUserId(userId);
     }
 
-    /** Check whether a specific user has already cooked a recipe */
     @GetMapping("/user/{userId}/recipe/{recipeId}")
     public ResponseEntity<CookedRecipe> getEntry(
             @PathVariable Long userId,
@@ -37,15 +38,9 @@ public class CookedRecipeController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    /**
-     * Save (or update) a cooked-recipe entry.
-     * Called when the user presses "Finish" on the cooking view.
-     * Body must contain userId, recipeId, and optionally elapsedSeconds.
-     */
     @PostMapping
     public CookedRecipe save(@RequestBody CookedRecipe payload) {
-        // Upsert: if already exists, update elapsed time & timestamp
-        return repository.findByUserIdAndRecipeId(payload.getUserId(), payload.getRecipeId())
+        CookedRecipe savedCookedRecipe = repository.findByUserIdAndRecipeId(payload.getUserId(), payload.getRecipeId())
                 .map(existing -> {
                     existing.setCookedAt(LocalDateTime.now());
                     existing.setElapsedSeconds(payload.getElapsedSeconds());
@@ -55,9 +50,11 @@ public class CookedRecipeController {
                     payload.setCookedAt(LocalDateTime.now());
                     return repository.save(payload);
                 });
+
+        achievementUnlockService.checkCookedAchievements(savedCookedRecipe.getUserId());
+        return savedCookedRecipe;
     }
 
-    /** Remove a cooked-recipe entry (un-cook) */
     @DeleteMapping("/user/{userId}/recipe/{recipeId}")
     @Transactional
     public ResponseEntity<Void> delete(

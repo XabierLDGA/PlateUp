@@ -276,7 +276,7 @@ CREATE TABLE IF NOT EXISTS CookedRecipes (
     user_id      BIGINT  NOT NULL,
     recipe_id    BIGINT  NOT NULL,
     cooked_at    DATETIME DEFAULT CURRENT_TIMESTAMP,
-    elapsed_seconds INT  DEFAULT 0,         -- actual time spent cooking
+    elapsed_seconds INT  DEFAULT 0,
     CONSTRAINT uq_cooked UNIQUE (user_id, recipe_id),
     CONSTRAINT fk_cooked_user   FOREIGN KEY (user_id)   REFERENCES Users(id)   ON DELETE CASCADE,
     CONSTRAINT fk_cooked_recipe FOREIGN KEY (recipe_id) REFERENCES Recipes(id) ON DELETE CASCADE
@@ -296,15 +296,9 @@ CREATE INDEX idx_cooked_user ON CookedRecipes(user_id);
 
 -- ===========================================
 -- DATOS DE PRUEBA AMPLIADOS - PlateUp
--- Compatible con el schema actual
--- CORREGIDO: todas las recetas tienen pasos e ingredientes
 -- ===========================================
 
 USE plateup;
-
--- ===========================================
--- LIMPIAR TABLAS (opcional pero recomendable)
--- ===========================================
 
 SET FOREIGN_KEY_CHECKS = 0;
 
@@ -326,6 +320,7 @@ TRUNCATE TABLE Utensils;
 TRUNCATE TABLE RecipeIngredients;
 TRUNCATE TABLE Ingredients;
 TRUNCATE TABLE RecipeSteps;
+TRUNCATE TABLE CookedRecipes;
 TRUNCATE TABLE Recipes;
 TRUNCATE TABLE Users;
 
@@ -588,15 +583,18 @@ VALUES
 
 INSERT INTO Achievements (name, description, icon_url, category, points)
 VALUES
-('Nuevo chef','Publica tu primera receta','https://picsum.photos/50?ach1','publicación',50),
-('Popular','Consigue 10 me gusta','https://picsum.photos/50?ach2','social',100),
-('Comentarista','Deja 5 comentarios','https://picsum.photos/50?ach3','interacción',70),
-('Explorador','Publica recetas en 3 categorías','https://picsum.photos/50?ach4','creatividad',80),
-('Fotógrafo foodie','Sube 10 fotos','https://picsum.photos/50?ach5','visual',60);
-
-INSERT INTO UserAchievements (user_id, achievement_id, level)
-VALUES
-(1,1,1),(2,2,1),(3,3,1),(4,4,1),(5,5,1);
+('Tu primera receta','Publica tu primera receta en PlateUp.','https://picsum.photos/50?achievement_recipe_1','recipes',50),
+('Chef constante','Publica 10 recetas.','https://picsum.photos/50?achievement_recipe_2','recipes',100),
+('Maestro de la cocina','Publica 25 recetas.','https://picsum.photos/50?achievement_recipe_3','recipes',200),
+('Primer aplauso','Recibe tu primer like en una de tus recetas.','https://picsum.photos/50?achievement_like_1','likes',40),
+('Receta popular','Recibe 10 likes en total en tus recetas.','https://picsum.photos/50?achievement_like_2','likes',100),
+('Fenómeno foodie','Recibe 25 likes en total en tus recetas.','https://picsum.photos/50?achievement_like_3','likes',180),
+('Primera receta cocinada','Termina de cocinar tu primera receta.','https://picsum.photos/50?achievement_cooked_1','cooked',50),
+('Cocinillas','Termina de cocinar 10 recetas.','https://picsum.photos/50?achievement_cooked_2','cooked',110),
+('Chef imparable','Termina de cocinar 25 recetas.','https://picsum.photos/50?achievement_cooked_3','cooked',220),
+('Tu primer seguidor','Consigue tu primer seguidor.','https://picsum.photos/50?achievement_followers_1','followers',60),
+('Creador con comunidad','Consigue 10 seguidores.','https://picsum.photos/50?achievement_followers_2','followers',130),
+('Estrella de PlateUp','Consigue 25 seguidores.','https://picsum.photos/50?achievement_followers_3','followers',250);
 
 -- ===========================================
 -- CHALLENGES

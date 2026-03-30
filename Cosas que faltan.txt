@@ -1,11 +1,13 @@
 COSAS QUE FALTAN:
 
 - Que funcionen las configuraciones:
-	- Cambiar foto de perfil
-	- Poner el perfil público o privado
-	- Eliminar cuenta
+	- Cambiar foto de perfil		LISTO PERO NO VA
+	- Poner el perfil público o privado	
+	- Eliminar cuenta			LISTO
 
 - Que funcionen las rachas y logros
+
+- COMENTARIOS
 
 - Que en explore solo salgan las recetas de la gente que tiene la cuenta pública
 
