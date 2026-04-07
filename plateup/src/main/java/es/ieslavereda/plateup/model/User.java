@@ -1,6 +1,7 @@
 package es.ieslavereda.plateup.model;
 
 import jakarta.persistence.*;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
@@ -34,6 +35,12 @@ public class User {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
+    @Column(name = "streak_count")
+    private Integer streakCount;
+
+    @Column(name = "last_active_date")
+    private LocalDate lastActiveDate;
+
     // Getters y Setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -64,4 +71,10 @@ public class User {
 
     public LocalDateTime getUpdatedAt() { return updatedAt; }
     public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
+
+    public Integer getStreakCount() { return streakCount; }
+    public void setStreakCount(Integer streakCount) { this.streakCount = streakCount; }
+
+    public LocalDate getLastActiveDate() { return lastActiveDate; }
+    public void setLastActiveDate(LocalDate lastActiveDate) { this.lastActiveDate = lastActiveDate; }
 }

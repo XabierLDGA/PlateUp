@@ -80,7 +80,8 @@ export const useAuthStore = defineStore('auth', {
           return
         }
 
-        this.setSessionUser(freshUser)
+        const checkinResponse = await userService.dailyCheckin(freshUser.id)
+        this.setSessionUser(checkinResponse.data)
       } catch (error) {
         console.error('Error restoring user session:', error)
         this.logout()
@@ -94,6 +95,13 @@ export const useAuthStore = defineStore('auth', {
       try {
         const response = await userService.login(credentials)
         this.setSessionUser(response.data)
+
+        if (response.data?.id) {
+          const checkinResponse = await userService.dailyCheckin(response.data.id)
+          this.setSessionUser(checkinResponse.data)
+          return checkinResponse.data
+        }
+
         return response.data
       } finally {
         this.loading = false
@@ -106,6 +114,13 @@ export const useAuthStore = defineStore('auth', {
       try {
         const response = await userService.register(payload)
         this.setSessionUser(response.data)
+
+        if (response.data?.id) {
+          const checkinResponse = await userService.dailyCheckin(response.data.id)
+          this.setSessionUser(checkinResponse.data)
+          return checkinResponse.data
+        }
+
         return response.data
       } finally {
         this.loading = false

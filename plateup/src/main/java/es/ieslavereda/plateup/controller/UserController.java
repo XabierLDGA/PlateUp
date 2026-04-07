@@ -23,7 +23,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -92,6 +94,15 @@ public class UserController {
 
     @PostMapping
     public User create(@RequestBody User user) {
+        if (user.getStreakCount() == null) {
+            user.setStreakCount(0);
+        }
+
+        if (user.getCreatedAt() == null) {
+            user.setCreatedAt(LocalDateTime.now());
+        }
+
+        user.setUpdatedAt(LocalDateTime.now());
         return repository.save(user);
     }
 
@@ -165,6 +176,8 @@ public class UserController {
         user.setVisibilityDefault(visibilityDefault);
         user.setCreatedAt(LocalDateTime.now());
         user.setUpdatedAt(LocalDateTime.now());
+        user.setStreakCount(0);
+        user.setLastActiveDate(null);
 
         User createdUser = repository.save(user);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdUser);
@@ -189,9 +202,47 @@ public class UserController {
         existing.setVisibilityDefault(normalizeVisibility(valueOrDefault(user.getVisibilityDefault(), existing.getVisibilityDefault())));
         existing.setCreatedAt(existing.getCreatedAt() == null ? LocalDateTime.now() : existing.getCreatedAt());
         existing.setUpdatedAt(LocalDateTime.now());
+        existing.setStreakCount(user.getStreakCount() == null ? existing.getStreakCount() : user.getStreakCount());
+        existing.setLastActiveDate(user.getLastActiveDate() == null ? existing.getLastActiveDate() : user.getLastActiveDate());
 
         User updatedUser = repository.save(existing);
         return ResponseEntity.ok(updatedUser);
+    }
+
+
+    @PostMapping("/{id}/daily-checkin")
+    public ResponseEntity<?> dailyCheckin(@PathVariable Long id) {
+        Optional<User> userOptional = repository.findById(id);
+
+        if (userOptional.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        User user = userOptional.get();
+        LocalDate today = LocalDate.now();
+        LocalDate lastActiveDate = user.getLastActiveDate();
+
+        if (lastActiveDate == null) {
+            user.setStreakCount(1);
+            user.setLastActiveDate(today);
+        } else {
+            long daysBetween = ChronoUnit.DAYS.between(lastActiveDate, today);
+
+            if (daysBetween == 0) {
+                // Ya hay check-in hoy, no hacemos nada
+            } else if (daysBetween == 1) {
+                user.setStreakCount((user.getStreakCount() == null ? 0 : user.getStreakCount()) + 1);
+                user.setLastActiveDate(today);
+            } else {
+                user.setStreakCount(1);
+                user.setLastActiveDate(today);
+            }
+        }
+
+        user.setUpdatedAt(LocalDateTime.now());
+        User savedUser = repository.save(user);
+
+        return ResponseEntity.ok(savedUser);
     }
 
     @DeleteMapping("/{id}")

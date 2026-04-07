@@ -209,8 +209,7 @@ const totalAchievementPoints = computed(() => {
 })
 
 const streakDays = computed(() => {
-  const count = achievementsCount.value
-  return count === 0 ? 1 : count + 2
+  return Number(authStore.currentUser?.streakCount || 0)
 })
 
 const filteredRecipes = computed(() => {

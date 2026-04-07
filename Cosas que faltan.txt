@@ -1,13 +1,14 @@
 COSAS QUE FALTAN:
 
 - Que funcionen las configuraciones:
-	- Cambiar foto de perfil		LISTO PERO NO VA
-	- Poner el perfil público o privado	
-	- Eliminar cuenta			LISTO
+	- Cambiar foto de perfil		LISTA la parte del frontend pero no va porque falta el capacitor.
+	- Poner el perfil público o privado	Dudas de si hacerlo o no.
+	- Eliminar cuenta			LISTO y funcionando
 
-- Que funcionen las rachas y logros
+- Que funcionen las rachas y logros		LISTOS los logros funcionales, faltan las rachas.
 
-- COMENTARIOS
+- COMENTARIOS					NO SÉ SI HACERLOS
+
 
 - Que en explore solo salgan las recetas de la gente que tiene la cuenta pública
 

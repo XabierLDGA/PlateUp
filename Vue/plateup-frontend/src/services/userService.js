@@ -28,4 +28,8 @@ export default {
   remove(id) {
     return api.delete(`/users/${id}`)
   },
+
+  dailyCheckin(id) {
+    return api.post(`/users/${id}/daily-checkin`)
+  },
 }
