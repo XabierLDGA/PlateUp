@@ -5,7 +5,7 @@ COSAS QUE FALTAN:
 	- Poner el perfil público o privado	Dudas de si hacerlo o no.
 	- Eliminar cuenta			LISTO y funcionando
 
-- Que funcionen las rachas y logros		LISTOS los logros funcionales, faltan las rachas.
+- Que funcionen las rachas y logros		LISTOS los logros funcionales, Rachas listas y funcionales.
 
 - COMENTARIOS					NO SÉ SI HACERLOS
 
