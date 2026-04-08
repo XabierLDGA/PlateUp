@@ -31,7 +31,21 @@ if (existingToken) {
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    console.error('API error:', error)
+    const status = error.response?.status
+
+    if (status === 401 || status === 403) {
+      console.warn('Token inválido o expirado')
+
+      // eliminar token
+      localStorage.removeItem('plateup_auth_token')
+
+      // quitar header
+      delete api.defaults.headers.common.Authorization
+
+      // redirigir a login
+      window.location.href = '/login'
+    }
+
     return Promise.reject(error)
   }
 )
