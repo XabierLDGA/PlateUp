@@ -7,15 +7,13 @@ COSAS QUE FALTAN:
 
 - Que funcionen las rachas y logros		LISTOS los logros funcionales, Rachas listas y funcionales.
 
+
 - COMENTARIOS					NO SÉ SI HACERLOS
-
-
 - Que en explore solo salgan las recetas de la gente que tiene la cuenta pública
-
 - Que haga falta aceptar la solicitud a la gente que la tiene privada
 
-- Hacer los logins mas seguros con bcript y jwt
+
+- Hacer los logins mas seguros con bcript y jwt VAMOOOOOS, ESTO YA ESTÁ
 
 - Poner el Capacitor
-
 - Poder subir fotos de la galería o sacar la cámara o subir fotos pero que no sean urls
