@@ -1,5 +1,6 @@
 package es.ieslavereda.plateup.controller;
 
+import es.ieslavereda.plateup.dto.AuthResponse;
 import es.ieslavereda.plateup.dto.LoginRequest;
 import es.ieslavereda.plateup.dto.RegisterRequest;
 import es.ieslavereda.plateup.model.Collection;
@@ -18,8 +19,12 @@ import es.ieslavereda.plateup.repository.RecipeUtensilRepository;
 import es.ieslavereda.plateup.repository.UserAchievementRepository;
 import es.ieslavereda.plateup.repository.UserChallengeRepository;
 import es.ieslavereda.plateup.repository.UserRepository;
+import es.ieslavereda.plateup.security.JwtService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
@@ -49,6 +54,8 @@ public class UserController {
     private final UserChallengeRepository userChallengeRepository;
     private final CollectionRepository collectionRepository;
     private final CollectionRecipeRepository collectionRecipeRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final JwtService jwtService;
 
     public UserController(
             UserRepository repository,
@@ -63,7 +70,9 @@ public class UserController {
             UserAchievementRepository userAchievementRepository,
             UserChallengeRepository userChallengeRepository,
             CollectionRepository collectionRepository,
-            CollectionRecipeRepository collectionRecipeRepository
+            CollectionRecipeRepository collectionRecipeRepository,
+            PasswordEncoder passwordEncoder,
+            JwtService jwtService
     ) {
         this.repository = repository;
         this.recipeRepository = recipeRepository;
@@ -78,6 +87,8 @@ public class UserController {
         this.userChallengeRepository = userChallengeRepository;
         this.collectionRepository = collectionRepository;
         this.collectionRecipeRepository = collectionRecipeRepository;
+        this.passwordEncoder = passwordEncoder;
+        this.jwtService = jwtService;
     }
 
     @GetMapping
@@ -94,6 +105,10 @@ public class UserController {
 
     @PostMapping
     public User create(@RequestBody User user) {
+        if (user.getPasswordHash() != null && !user.getPasswordHash().isBlank() && !isBcryptHash(user.getPasswordHash())) {
+            user.setPasswordHash(passwordEncoder.encode(user.getPasswordHash()));
+        }
+
         if (user.getStreakCount() == null) {
             user.setStreakCount(0);
         }
@@ -126,12 +141,13 @@ public class UserController {
 
         User user = userOptional.get();
 
-        if (user.getPasswordHash() == null || !user.getPasswordHash().equals(password)) {
+        if (!matchesPasswordAndMigrateLegacy(user, password)) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(error("The username/email or password is incorrect."));
         }
 
-        return ResponseEntity.ok(user);
+        String token = jwtService.generateToken(user);
+        return ResponseEntity.ok(new AuthResponse(token, user));
     }
 
     @PostMapping("/register")
@@ -169,7 +185,7 @@ public class UserController {
         User user = new User();
         user.setUsername(username);
         user.setEmail(email);
-        user.setPasswordHash(password);
+        user.setPasswordHash(passwordEncoder.encode(password));
         user.setDisplayName(displayName);
         user.setBio(bio);
         user.setAvatarUrl(avatarUrl);
@@ -180,7 +196,9 @@ public class UserController {
         user.setLastActiveDate(null);
 
         User createdUser = repository.save(user);
-        return ResponseEntity.status(HttpStatus.CREATED).body(createdUser);
+        String token = jwtService.generateToken(createdUser);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(new AuthResponse(token, createdUser));
     }
 
     @PutMapping("/{id}")
@@ -191,11 +209,16 @@ public class UserController {
             return ResponseEntity.notFound().build();
         }
 
+        User authenticatedUser = getAuthenticatedUser();
+        if (!authenticatedUser.getId().equals(id)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(error("You can only update your own account."));
+        }
+
         User existing = existingOptional.get();
 
         existing.setUsername(valueOrDefault(user.getUsername(), existing.getUsername()));
         existing.setEmail(valueOrDefault(user.getEmail(), existing.getEmail()));
-        existing.setPasswordHash(valueOrDefault(user.getPasswordHash(), existing.getPasswordHash()));
         existing.setDisplayName(valueOrDefault(user.getDisplayName(), existing.getDisplayName()));
         existing.setBio(valueOrDefault(user.getBio(), existing.getBio()));
         existing.setAvatarUrl(valueOrDefault(user.getAvatarUrl(), existing.getAvatarUrl()));
@@ -205,10 +228,17 @@ public class UserController {
         existing.setStreakCount(user.getStreakCount() == null ? existing.getStreakCount() : user.getStreakCount());
         existing.setLastActiveDate(user.getLastActiveDate() == null ? existing.getLastActiveDate() : user.getLastActiveDate());
 
+        if (user.getPasswordHash() != null && !user.getPasswordHash().isBlank()) {
+            if (isBcryptHash(user.getPasswordHash())) {
+                existing.setPasswordHash(user.getPasswordHash());
+            } else {
+                existing.setPasswordHash(passwordEncoder.encode(user.getPasswordHash()));
+            }
+        }
+
         User updatedUser = repository.save(existing);
         return ResponseEntity.ok(updatedUser);
     }
-
 
     @PostMapping("/{id}/daily-checkin")
     public ResponseEntity<?> dailyCheckin(@PathVariable Long id) {
@@ -216,6 +246,12 @@ public class UserController {
 
         if (userOptional.isEmpty()) {
             return ResponseEntity.notFound().build();
+        }
+
+        User authenticatedUser = getAuthenticatedUser();
+        if (!authenticatedUser.getId().equals(id)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(error("You can only check in for your own account."));
         }
 
         User user = userOptional.get();
@@ -229,7 +265,7 @@ public class UserController {
             long daysBetween = ChronoUnit.DAYS.between(lastActiveDate, today);
 
             if (daysBetween == 0) {
-                // Ya hay check-in hoy, no hacemos nada
+                // Ya hizo check-in hoy
             } else if (daysBetween == 1) {
                 user.setStreakCount((user.getStreakCount() == null ? 0 : user.getStreakCount()) + 1);
                 user.setLastActiveDate(today);
@@ -252,6 +288,12 @@ public class UserController {
 
         if (userOptional.isEmpty()) {
             return ResponseEntity.notFound().build();
+        }
+
+        User authenticatedUser = getAuthenticatedUser();
+        if (!authenticatedUser.getId().equals(id)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(error("You can only delete your own account."));
         }
 
         List<Recipe> userRecipes = recipeRepository.findByUserIdOrderByCreatedAtDescIdDesc(id);
@@ -289,6 +331,42 @@ public class UserController {
         repository.deleteById(id);
 
         return ResponseEntity.ok(success("Account deleted successfully."));
+    }
+
+    private User getAuthenticatedUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication == null || authentication.getName() == null) {
+            throw new RuntimeException("Authenticated user not found");
+        }
+
+        return repository.findByUsername(authentication.getName())
+                .orElseThrow(() -> new RuntimeException("Authenticated user not found"));
+    }
+
+    private boolean matchesPasswordAndMigrateLegacy(User user, String rawPassword) {
+        String storedPassword = user.getPasswordHash();
+
+        if (storedPassword == null || storedPassword.isBlank()) {
+            return false;
+        }
+
+        if (isBcryptHash(storedPassword)) {
+            return passwordEncoder.matches(rawPassword, storedPassword);
+        }
+
+        if (storedPassword.equals(rawPassword)) {
+            user.setPasswordHash(passwordEncoder.encode(rawPassword));
+            user.setUpdatedAt(LocalDateTime.now());
+            repository.save(user);
+            return true;
+        }
+
+        return false;
+    }
+
+    private boolean isBcryptHash(String value) {
+        return value.startsWith("$2a$") || value.startsWith("$2b$") || value.startsWith("$2y$");
     }
 
     private String valueOrDefault(String incomingValue, String currentValue) {

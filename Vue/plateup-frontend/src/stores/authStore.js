@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import userService from '../services/userService'
 import { getUserAvatar } from '../utils/userAvatar'
+import { getStoredToken, setAuthToken } from '../services/api'
 
 const STORAGE_KEY = 'plateup_current_user'
 
@@ -16,6 +17,7 @@ function normalizeUser(user) {
 export const useAuthStore = defineStore('auth', {
   state: () => ({
     currentUser: null,
+    authToken: null,
     isAuthenticated: false,
     loading: false,
     initialized: false,
@@ -37,7 +39,7 @@ export const useAuthStore = defineStore('auth', {
     setSessionUser(user) {
       const normalizedUser = normalizeUser(user)
       this.currentUser = normalizedUser
-      this.isAuthenticated = Boolean(normalizedUser?.id)
+      this.isAuthenticated = Boolean(normalizedUser?.id && this.authToken)
       this.initialized = true
 
       if (normalizedUser) {
@@ -47,6 +49,12 @@ export const useAuthStore = defineStore('auth', {
       }
     },
 
+    setSessionToken(token) {
+      this.authToken = token || null
+      setAuthToken(this.authToken)
+      this.isAuthenticated = Boolean(this.currentUser?.id && this.authToken)
+    },
+
     async initialize() {
       if (this.initialized) return
       await this.loadFromStorage()
@@ -54,10 +62,10 @@ export const useAuthStore = defineStore('auth', {
 
     async loadFromStorage() {
       const rawUser = localStorage.getItem(STORAGE_KEY)
+      const storedToken = getStoredToken()
 
-      if (!rawUser) {
-        this.currentUser = null
-        this.isAuthenticated = false
+      if (!rawUser || !storedToken) {
+        this.logout()
         this.initialized = true
         return
       }
@@ -70,6 +78,8 @@ export const useAuthStore = defineStore('auth', {
           this.initialized = true
           return
         }
+
+        this.setSessionToken(storedToken)
 
         const response = await userService.getById(parsedUser.id)
         const freshUser = response.data || null
@@ -94,15 +104,19 @@ export const useAuthStore = defineStore('auth', {
 
       try {
         const response = await userService.login(credentials)
-        this.setSessionUser(response.data)
+        const token = response.data?.token || null
+        const user = response.data?.user || null
 
-        if (response.data?.id) {
-          const checkinResponse = await userService.dailyCheckin(response.data.id)
+        this.setSessionToken(token)
+        this.setSessionUser(user)
+
+        if (user?.id) {
+          const checkinResponse = await userService.dailyCheckin(user.id)
           this.setSessionUser(checkinResponse.data)
           return checkinResponse.data
         }
 
-        return response.data
+        return user
       } finally {
         this.loading = false
       }
@@ -113,22 +127,26 @@ export const useAuthStore = defineStore('auth', {
 
       try {
         const response = await userService.register(payload)
-        this.setSessionUser(response.data)
+        const token = response.data?.token || null
+        const user = response.data?.user || null
 
-        if (response.data?.id) {
-          const checkinResponse = await userService.dailyCheckin(response.data.id)
+        this.setSessionToken(token)
+        this.setSessionUser(user)
+
+        if (user?.id) {
+          const checkinResponse = await userService.dailyCheckin(user.id)
           this.setSessionUser(checkinResponse.data)
           return checkinResponse.data
         }
 
-        return response.data
+        return user
       } finally {
         this.loading = false
       }
     },
 
     async refreshCurrentUser() {
-      if (!this.currentUser?.id) return null
+      if (!this.currentUser?.id || !this.authToken) return null
 
       const response = await userService.getById(this.currentUser.id)
       const freshUser = response.data || null
@@ -144,9 +162,11 @@ export const useAuthStore = defineStore('auth', {
 
     logout() {
       this.currentUser = null
+      this.authToken = null
       this.isAuthenticated = false
       this.initialized = true
       localStorage.removeItem(STORAGE_KEY)
+      setAuthToken(null)
     },
   },
 })

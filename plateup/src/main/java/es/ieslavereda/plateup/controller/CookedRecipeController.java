@@ -1,9 +1,14 @@
 package es.ieslavereda.plateup.controller;
 
 import es.ieslavereda.plateup.model.CookedRecipe;
+import es.ieslavereda.plateup.model.User;
 import es.ieslavereda.plateup.repository.CookedRecipeRepository;
+import es.ieslavereda.plateup.repository.UserRepository;
 import es.ieslavereda.plateup.service.AchievementUnlockService;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,10 +22,16 @@ public class CookedRecipeController {
 
     private final CookedRecipeRepository repository;
     private final AchievementUnlockService achievementUnlockService;
+    private final UserRepository userRepository;
 
-    public CookedRecipeController(CookedRecipeRepository repository, AchievementUnlockService achievementUnlockService) {
+    public CookedRecipeController(
+            CookedRecipeRepository repository,
+            AchievementUnlockService achievementUnlockService,
+            UserRepository userRepository
+    ) {
         this.repository = repository;
         this.achievementUnlockService = achievementUnlockService;
+        this.userRepository = userRepository;
     }
 
     @GetMapping("/user/{userId}")
@@ -39,27 +50,38 @@ public class CookedRecipeController {
     }
 
     @PostMapping
-    public CookedRecipe save(@RequestBody CookedRecipe payload) {
-        CookedRecipe savedCookedRecipe = repository.findByUserIdAndRecipeId(payload.getUserId(), payload.getRecipeId())
+    public ResponseEntity<?> save(@RequestBody CookedRecipe payload) {
+        User authenticatedUser = getAuthenticatedUser();
+        Long authenticatedUserId = authenticatedUser.getId();
+
+        CookedRecipe savedCookedRecipe = repository.findByUserIdAndRecipeId(authenticatedUserId, payload.getRecipeId())
                 .map(existing -> {
                     existing.setCookedAt(LocalDateTime.now());
                     existing.setElapsedSeconds(payload.getElapsedSeconds());
                     return repository.save(existing);
                 })
                 .orElseGet(() -> {
+                    payload.setUserId(authenticatedUserId);
                     payload.setCookedAt(LocalDateTime.now());
                     return repository.save(payload);
                 });
 
         achievementUnlockService.checkCookedAchievements(savedCookedRecipe.getUserId());
-        return savedCookedRecipe;
+        return ResponseEntity.status(HttpStatus.CREATED).body(savedCookedRecipe);
     }
 
     @DeleteMapping("/user/{userId}/recipe/{recipeId}")
     @Transactional
-    public ResponseEntity<Void> delete(
+    public ResponseEntity<?> delete(
             @PathVariable Long userId,
             @PathVariable Long recipeId) {
+
+        User authenticatedUser = getAuthenticatedUser();
+
+        if (!authenticatedUser.getId().equals(userId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body("You can only delete your own cooked recipes.");
+        }
 
         if (!repository.existsByUserIdAndRecipeId(userId, recipeId)) {
             return ResponseEntity.notFound().build();
@@ -67,5 +89,16 @@ public class CookedRecipeController {
 
         repository.deleteByUserIdAndRecipeId(userId, recipeId);
         return ResponseEntity.noContent().build();
+    }
+
+    private User getAuthenticatedUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication == null || authentication.getName() == null) {
+            throw new RuntimeException("Authenticated user not found");
+        }
+
+        return userRepository.findByUsername(authentication.getName())
+                .orElseThrow(() -> new RuntimeException("Authenticated user not found"));
     }
 }

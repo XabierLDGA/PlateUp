@@ -1,8 +1,14 @@
 package es.ieslavereda.plateup.controller;
 
 import es.ieslavereda.plateup.model.Recipe;
+import es.ieslavereda.plateup.model.User;
 import es.ieslavereda.plateup.repository.RecipeRepository;
+import es.ieslavereda.plateup.repository.UserRepository;
 import es.ieslavereda.plateup.service.AchievementUnlockService;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
@@ -15,10 +21,16 @@ import java.util.Optional;
 public class RecipeController {
 
     private final RecipeRepository repository;
+    private final UserRepository userRepository;
     private final AchievementUnlockService achievementUnlockService;
 
-    public RecipeController(RecipeRepository repository, AchievementUnlockService achievementUnlockService) {
+    public RecipeController(
+            RecipeRepository repository,
+            UserRepository userRepository,
+            AchievementUnlockService achievementUnlockService
+    ) {
         this.repository = repository;
+        this.userRepository = userRepository;
         this.achievementUnlockService = achievementUnlockService;
     }
 
@@ -38,8 +50,11 @@ public class RecipeController {
     }
 
     @PostMapping
-    public Recipe create(@RequestBody Recipe recipe) {
+    public ResponseEntity<?> create(@RequestBody Recipe recipe) {
+        User authenticatedUser = getAuthenticatedUser();
         LocalDateTime now = LocalDateTime.now();
+
+        recipe.setUserId(authenticatedUser.getId());
 
         if (recipe.getCreatedAt() == null) {
             recipe.setCreatedAt(now);
@@ -49,26 +64,57 @@ public class RecipeController {
 
         Recipe savedRecipe = repository.save(recipe);
         achievementUnlockService.checkRecipeAchievements(savedRecipe.getUserId());
-        return savedRecipe;
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(savedRecipe);
     }
 
     @PutMapping("/{id}")
-    public Recipe update(@PathVariable Long id, @RequestBody Recipe recipe) {
+    public ResponseEntity<?> update(@PathVariable Long id, @RequestBody Recipe recipe) {
         Recipe existing = repository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Recipe not found"));
 
+        User authenticatedUser = getAuthenticatedUser();
+        if (!existing.getUserId().equals(authenticatedUser.getId())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body("You can only update your own recipes.");
+        }
+
         recipe.setId(existing.getId());
+        recipe.setUserId(existing.getUserId());
 
         if (recipe.getCreatedAt() == null) {
             recipe.setCreatedAt(existing.getCreatedAt());
         }
 
         recipe.setUpdatedAt(LocalDateTime.now());
-        return repository.save(recipe);
+        Recipe updatedRecipe = repository.save(recipe);
+
+        return ResponseEntity.ok(updatedRecipe);
     }
 
     @DeleteMapping("/{id}")
-    public void delete(@PathVariable Long id) {
+    public ResponseEntity<?> delete(@PathVariable Long id) {
+        Recipe existing = repository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Recipe not found"));
+
+        User authenticatedUser = getAuthenticatedUser();
+        if (!existing.getUserId().equals(authenticatedUser.getId())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body("You can only delete your own recipes.");
+        }
+
         repository.deleteById(id);
+        return ResponseEntity.ok().build();
+    }
+
+    private User getAuthenticatedUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication == null || authentication.getName() == null) {
+            throw new RuntimeException("Authenticated user not found");
+        }
+
+        return userRepository.findByUsername(authentication.getName())
+                .orElseThrow(() -> new RuntimeException("Authenticated user not found"));
     }
 }

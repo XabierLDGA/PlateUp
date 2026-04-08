@@ -2,10 +2,14 @@ package es.ieslavereda.plateup.controller;
 
 import es.ieslavereda.plateup.model.Follow;
 import es.ieslavereda.plateup.model.FollowId;
+import es.ieslavereda.plateup.model.User;
 import es.ieslavereda.plateup.repository.FollowRepository;
+import es.ieslavereda.plateup.repository.UserRepository;
 import es.ieslavereda.plateup.service.AchievementUnlockService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
@@ -20,10 +24,16 @@ public class FollowController {
 
     private final FollowRepository repository;
     private final AchievementUnlockService achievementUnlockService;
+    private final UserRepository userRepository;
 
-    public FollowController(FollowRepository repository, AchievementUnlockService achievementUnlockService) {
+    public FollowController(
+            FollowRepository repository,
+            AchievementUnlockService achievementUnlockService,
+            UserRepository userRepository
+    ) {
         this.repository = repository;
         this.achievementUnlockService = achievementUnlockService;
+        this.userRepository = userRepository;
     }
 
     @GetMapping
@@ -42,10 +52,14 @@ public class FollowController {
     }
 
     @PostMapping
-    public ResponseEntity<Follow> create(@RequestBody Follow follow) {
-        if (follow.getFollowerId() == null || follow.getFollowedId() == null) {
-            return ResponseEntity.badRequest().build();
+    public ResponseEntity<?> create(@RequestBody Follow follow) {
+        User authenticatedUser = getAuthenticatedUser();
+
+        if (follow.getFollowedId() == null) {
+            return ResponseEntity.badRequest().body("followedId is required.");
         }
+
+        follow.setFollowerId(authenticatedUser.getId());
 
         if (follow.getCreatedAt() == null) {
             follow.setCreatedAt(LocalDateTime.now());
@@ -67,7 +81,7 @@ public class FollowController {
     }
 
     @PutMapping("/{followerId}/{followedId}")
-    public ResponseEntity<Follow> update(
+    public ResponseEntity<?> update(
             @PathVariable Long followerId,
             @PathVariable Long followedId,
             @RequestBody Follow updatedFollow
@@ -76,6 +90,14 @@ public class FollowController {
 
         return repository.findById(id)
                 .map(existingFollow -> {
+                    User authenticatedUser = getAuthenticatedUser();
+
+                    if (!authenticatedUser.getId().equals(existingFollow.getFollowedId())
+                            && !authenticatedUser.getId().equals(existingFollow.getFollowerId())) {
+                        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                                .body("You can only update your own follow relationships.");
+                    }
+
                     if (updatedFollow.getStatus() != null && !updatedFollow.getStatus().isBlank()) {
                         existingFollow.setStatus(updatedFollow.getStatus().trim().toLowerCase());
                     }
@@ -96,28 +118,54 @@ public class FollowController {
     }
 
     @PostMapping("/{followerId}/{followedId}/accept")
-    public ResponseEntity<Follow> acceptRequest(@PathVariable Long followerId, @PathVariable Long followedId) {
+    public ResponseEntity<?> acceptRequest(@PathVariable Long followerId, @PathVariable Long followedId) {
         FollowId id = new FollowId(followerId, followedId);
 
         return repository.findById(id)
                 .map(existingFollow -> {
+                    User authenticatedUser = getAuthenticatedUser();
+
+                    if (!authenticatedUser.getId().equals(existingFollow.getFollowedId())) {
+                        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                                .body("You can only accept requests sent to your account.");
+                    }
+
                     existingFollow.setStatus("accepted");
                     Follow savedFollow = repository.save(existingFollow);
                     achievementUnlockService.checkFollowerAchievements(savedFollow.getFollowedId());
+
                     return ResponseEntity.ok(savedFollow);
                 })
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @DeleteMapping("/{followerId}/{followedId}")
-    public ResponseEntity<Map<String, String>> delete(@PathVariable Long followerId, @PathVariable Long followedId) {
+    public ResponseEntity<?> delete(@PathVariable Long followerId, @PathVariable Long followedId) {
         FollowId id = new FollowId(followerId, followedId);
 
         if (!repository.existsById(id)) {
             return ResponseEntity.notFound().build();
         }
 
+        User authenticatedUser = getAuthenticatedUser();
+
+        if (!authenticatedUser.getId().equals(followerId) && !authenticatedUser.getId().equals(followedId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of("message", "You can only delete your own follow relationships."));
+        }
+
         repository.deleteById(id);
         return ResponseEntity.ok(Map.of("message", "Follow deleted."));
+    }
+
+    private User getAuthenticatedUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication == null || authentication.getName() == null) {
+            throw new RuntimeException("Authenticated user not found");
+        }
+
+        return userRepository.findByUsername(authentication.getName())
+                .orElseThrow(() -> new RuntimeException("Authenticated user not found"));
     }
 }
