@@ -1,6 +1,5 @@
 import { defineStore } from 'pinia'
 import userService from '../services/userService'
-import { getUserAvatar } from '../utils/userAvatar'
 import { getStoredToken, setAuthToken } from '../services/api'
 
 const STORAGE_KEY = 'plateup_current_user'
@@ -10,7 +9,6 @@ function normalizeUser(user) {
 
   return {
     ...user,
-    avatarUrl: getUserAvatar(user),
   }
 }
 

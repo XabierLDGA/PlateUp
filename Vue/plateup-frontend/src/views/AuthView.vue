@@ -120,15 +120,9 @@
             ></textarea>
           </div>
 
-          <div>
-            <label class="mb-2 block text-sm font-semibold text-gray-700">Avatar URL</label>
-            <input
-              v-model="registerForm.avatarUrl"
-              type="url"
-              class="w-full rounded-2xl border border-gray-200 px-4 py-3 text-sm"
-              placeholder="https://example.com/avatar.jpg"
-            />
-          </div>
+          <p class="rounded-2xl bg-orange-50 px-4 py-3 text-sm text-gray-700">
+            You can upload your avatar after creating the account from the profile settings screen.
+          </p>
 
           <p v-if="errorMessage" class="rounded-2xl bg-red-50 px-4 py-3 text-sm font-medium text-red-600">
             {{ errorMessage }}
@@ -169,7 +163,6 @@ const registerForm = ref({
   email: '',
   password: '',
   bio: '',
-  avatarUrl: '',
   visibilityDefault: 'public',
 })
 
@@ -203,7 +196,7 @@ async function submitRegister() {
       email: registerForm.value.email,
       password: registerForm.value.password,
       bio: registerForm.value.bio,
-      avatarUrl: registerForm.value.avatarUrl,
+      avatarUrl: '',
       visibilityDefault: registerForm.value.visibilityDefault,
     })
 

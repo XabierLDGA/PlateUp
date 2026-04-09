@@ -31,13 +31,51 @@
           </div>
 
           <div>
-            <label class="mb-2 block text-sm font-semibold text-gray-700">Image URL</label>
+            <div class="mb-2 flex items-center justify-between gap-3">
+              <label class="block text-sm font-semibold text-gray-700">Recipe image</label>
+
+              <div class="flex gap-2">
+                <button
+                  type="button"
+                  class="rounded-full bg-orange-50 px-4 py-2 text-sm font-semibold text-[#f45b3f]"
+                  @click="openImagePicker"
+                >
+                  Choose image
+                </button>
+
+                <button
+                  v-if="recipePreviewUrl"
+                  type="button"
+                  class="rounded-full bg-gray-100 px-4 py-2 text-sm font-semibold text-gray-700"
+                  @click="removeRecipeImage"
+                >
+                  Remove
+                </button>
+              </div>
+            </div>
+
             <input
-              v-model="form.imageUrl"
-              type="url"
-              class="w-full rounded-2xl border border-gray-200 px-4 py-3 text-sm"
-              placeholder="https://example.com/recipe.jpg"
+              ref="recipeFileInputRef"
+              type="file"
+              accept="image/png,image/jpeg,image/jpg,image/webp"
+              class="hidden"
+              @change="handleRecipeImageChange"
             />
+
+            <div
+              v-if="recipePreviewUrl"
+              class="overflow-hidden rounded-[24px] border border-gray-200"
+            >
+              <img
+                :src="recipePreviewUrl"
+                alt="Recipe preview"
+                class="h-52 w-full object-cover"
+              />
+            </div>
+
+            <p v-else class="rounded-2xl bg-gray-50 px-4 py-4 text-sm text-gray-500">
+              No image selected. You can still publish without one.
+            </p>
           </div>
 
           <div class="grid grid-cols-2 gap-4">
@@ -209,12 +247,13 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { onBeforeUnmount, ref } from 'vue'
 import { useAuthStore } from '../stores/authStore'
 import recipeService from '../services/recipeService'
 import ingredientService from '../services/ingredientService'
 import recipeIngredientService from '../services/recipeIngredientService'
 import recipeStepService from '../services/recipeStepService'
+import uploadService from '../services/uploadService'
 import {
   DEFAULT_RECIPE_CATEGORY,
   RECIPE_CATEGORIES,
@@ -226,11 +265,13 @@ const authStore = useAuthStore()
 const message = ref('')
 const messageType = ref('success')
 const publishing = ref(false)
+const recipeFileInputRef = ref(null)
+const selectedRecipeImageFile = ref(null)
+const recipePreviewUrl = ref('')
 
 const form = ref({
   title: '',
   description: '',
-  imageUrl: '',
   totalMinutes: 30,
   servings: 2,
   category: DEFAULT_RECIPE_CATEGORY,
@@ -263,11 +304,58 @@ function removeStep(index) {
   }
 }
 
+function revokeRecipePreviewUrl() {
+  if (recipePreviewUrl.value && recipePreviewUrl.value.startsWith('blob:')) {
+    URL.revokeObjectURL(recipePreviewUrl.value)
+  }
+}
+
+function removeRecipeImage() {
+  revokeRecipePreviewUrl()
+  selectedRecipeImageFile.value = null
+  recipePreviewUrl.value = ''
+
+  if (recipeFileInputRef.value) {
+    recipeFileInputRef.value.value = ''
+  }
+}
+
+function openImagePicker() {
+  recipeFileInputRef.value?.click()
+}
+
+function handleRecipeImageChange(event) {
+  const file = event.target.files?.[0]
+  message.value = ''
+
+  if (!file) return
+
+  const validTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/webp']
+  const maxSizeInBytes = 5 * 1024 * 1024
+
+  if (!validTypes.includes(file.type)) {
+    messageType.value = 'error'
+    message.value = 'Please choose a PNG, JPG or WEBP image.'
+    removeRecipeImage()
+    return
+  }
+
+  if (file.size > maxSizeInBytes) {
+    messageType.value = 'error'
+    message.value = 'The image must be smaller than 5 MB.'
+    removeRecipeImage()
+    return
+  }
+
+  revokeRecipePreviewUrl()
+  selectedRecipeImageFile.value = file
+  recipePreviewUrl.value = URL.createObjectURL(file)
+}
+
 function resetForm() {
   form.value = {
     title: '',
     description: '',
-    imageUrl: '',
     totalMinutes: 30,
     servings: 2,
     category: DEFAULT_RECIPE_CATEGORY,
@@ -275,6 +363,8 @@ function resetForm() {
     ingredients: [{ name: '', quantity: null, unit: '' }],
     steps: [{ text: '' }],
   }
+
+  removeRecipeImage()
 }
 
 async function findOrCreateIngredient(rawIngredient, existingIngredients) {
@@ -316,12 +406,23 @@ async function publishRecipe() {
       (step) => step.text.trim() !== ''
     )
 
+    let uploadedImagePath = ''
+
+    if (selectedRecipeImageFile.value) {
+      const uploadResponse = await uploadService.uploadRecipeImage(selectedRecipeImageFile.value)
+      uploadedImagePath = uploadResponse.data?.path || ''
+
+      if (!uploadedImagePath) {
+        throw new Error('Recipe image upload failed')
+      }
+    }
+
     const recipePayload = {
       userId: authStore.currentUser.id,
       title: form.value.title,
       description: form.value.description,
       category: normalizeRecipeCategory(form.value.category),
-      imageUrl: form.value.imageUrl,
+      imageUrl: uploadedImagePath,
       servings: form.value.servings,
       totalMinutes: form.value.totalMinutes,
       difficulty: form.value.difficulty,
@@ -368,9 +469,13 @@ async function publishRecipe() {
   } catch (error) {
     console.error('Error publishing recipe:', error)
     messageType.value = 'error'
-    message.value = 'The recipe could not be published correctly.'
+    message.value = error?.response?.data?.message || 'The recipe could not be published correctly.'
   } finally {
     publishing.value = false
   }
 }
+
+onBeforeUnmount(() => {
+  revokeRecipePreviewUrl()
+})
 </script>

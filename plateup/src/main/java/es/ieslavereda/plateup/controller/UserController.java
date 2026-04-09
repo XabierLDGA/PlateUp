@@ -20,6 +20,7 @@ import es.ieslavereda.plateup.repository.UserAchievementRepository;
 import es.ieslavereda.plateup.repository.UserChallengeRepository;
 import es.ieslavereda.plateup.repository.UserRepository;
 import es.ieslavereda.plateup.security.JwtService;
+import es.ieslavereda.plateup.service.FileStorageService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -31,10 +32,8 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/users")
@@ -56,6 +55,7 @@ public class UserController {
     private final CollectionRecipeRepository collectionRecipeRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
+    private final FileStorageService fileStorageService;
 
     public UserController(
             UserRepository repository,
@@ -72,7 +72,8 @@ public class UserController {
             CollectionRepository collectionRepository,
             CollectionRecipeRepository collectionRecipeRepository,
             PasswordEncoder passwordEncoder,
-            JwtService jwtService
+            JwtService jwtService,
+            FileStorageService fileStorageService
     ) {
         this.repository = repository;
         this.recipeRepository = recipeRepository;
@@ -89,6 +90,7 @@ public class UserController {
         this.collectionRecipeRepository = collectionRecipeRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
+        this.fileStorageService = fileStorageService;
     }
 
     @GetMapping
@@ -216,6 +218,7 @@ public class UserController {
         }
 
         User existing = existingOptional.get();
+        String previousAvatarUrl = existing.getAvatarUrl();
 
         existing.setUsername(valueOrDefault(user.getUsername(), existing.getUsername()));
         existing.setEmail(valueOrDefault(user.getEmail(), existing.getEmail()));
@@ -237,6 +240,11 @@ public class UserController {
         }
 
         User updatedUser = repository.save(existing);
+
+        if (!Objects.equals(previousAvatarUrl, updatedUser.getAvatarUrl())) {
+            fileStorageService.deleteIfManagedPath(previousAvatarUrl);
+        }
+
         return ResponseEntity.ok(updatedUser);
     }
 
@@ -296,10 +304,18 @@ public class UserController {
                     .body(error("You can only delete your own account."));
         }
 
+        User user = userOptional.get();
+        String avatarToDelete = user.getAvatarUrl();
+
         List<Recipe> userRecipes = recipeRepository.findByUserIdOrderByCreatedAtDescIdDesc(id);
         List<Long> recipeIds = userRecipes.stream()
                 .map(Recipe::getId)
                 .toList();
+
+        List<String> recipeImagesToDelete = userRecipes.stream()
+                .map(Recipe::getImageUrl)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
 
         List<Collection> collections = collectionRepository.findByUserId(id);
         List<Long> collectionIds = collections.stream()
@@ -329,6 +345,9 @@ public class UserController {
         userChallengeRepository.deleteByUserId(id);
         collectionRepository.deleteByUserId(id);
         repository.deleteById(id);
+
+        fileStorageService.deleteIfManagedPath(avatarToDelete);
+        recipeImagesToDelete.forEach(fileStorageService::deleteIfManagedPath);
 
         return ResponseEntity.ok(success("Account deleted successfully."));
     }

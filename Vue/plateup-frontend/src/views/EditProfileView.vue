@@ -47,7 +47,7 @@
           </button>
 
           <button
-            v-if="selectedImage"
+            v-if="previewUrl"
             type="button"
             class="rounded-2xl bg-white px-5 py-3 text-sm font-semibold text-gray-700 ring-1 ring-black/5 transition hover:bg-gray-50"
             :disabled="savingAvatar"
@@ -144,18 +144,20 @@
 </template>
 
 <script setup>
-import { computed, ref } from 'vue'
+import { computed, onBeforeUnmount, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { AlertTriangle, Trash2 } from 'lucide-vue-next'
 import { useAuthStore } from '../stores/authStore'
 import userService from '../services/userService'
+import uploadService from '../services/uploadService'
 import { getUserAvatar } from '../utils/userAvatar'
 
 const router = useRouter()
 const authStore = useAuthStore()
 
 const fileInputRef = ref(null)
-const selectedImage = ref('')
+const selectedFile = ref(null)
+const previewUrl = ref('')
 const savingAvatar = ref(false)
 const avatarErrorMessage = ref('')
 const avatarSuccessMessage = ref('')
@@ -165,7 +167,7 @@ const deletingAccount = ref(false)
 const deleteErrorMessage = ref('')
 
 const currentUser = computed(() => authStore.currentUser)
-const avatarPreview = computed(() => selectedImage.value || getUserAvatar(currentUser.value))
+const avatarPreview = computed(() => previewUrl.value || getUserAvatar(currentUser.value))
 
 function goBack() {
   router.push({ name: 'profile' })
@@ -177,8 +179,16 @@ function openFilePicker() {
   fileInputRef.value?.click()
 }
 
+function revokePreviewUrl() {
+  if (previewUrl.value && previewUrl.value.startsWith('blob:')) {
+    URL.revokeObjectURL(previewUrl.value)
+  }
+}
+
 function resetSelectedImage() {
-  selectedImage.value = ''
+  revokePreviewUrl()
+  selectedFile.value = null
+  previewUrl.value = ''
   avatarErrorMessage.value = ''
   avatarSuccessMessage.value = ''
 
@@ -187,7 +197,7 @@ function resetSelectedImage() {
   }
 }
 
-function handleFileChange(event) {
+async function handleFileChange(event) {
   const file = event.target.files?.[0]
   avatarErrorMessage.value = ''
   avatarSuccessMessage.value = ''
@@ -195,7 +205,7 @@ function handleFileChange(event) {
   if (!file) return
 
   const validTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/webp']
-  const maxSizeInBytes = 2 * 1024 * 1024
+  const maxSizeInBytes = 5 * 1024 * 1024
 
   if (!validTypes.includes(file.type)) {
     avatarErrorMessage.value = 'Please choose a PNG, JPG or WEBP image.'
@@ -204,50 +214,44 @@ function handleFileChange(event) {
   }
 
   if (file.size > maxSizeInBytes) {
-    avatarErrorMessage.value = 'The image must be smaller than 2 MB.'
+    avatarErrorMessage.value = 'The image must be smaller than 5 MB.'
     resetSelectedImage()
     return
   }
 
-  const reader = new FileReader()
+  revokePreviewUrl()
+  selectedFile.value = file
+  previewUrl.value = URL.createObjectURL(file)
 
-  reader.onload = async () => {
-    selectedImage.value = typeof reader.result === 'string' ? reader.result : ''
-    await saveAvatar()
-  }
-
-  reader.onerror = () => {
-    avatarErrorMessage.value = 'The image could not be loaded.'
-    resetSelectedImage()
-  }
-
-  reader.readAsDataURL(file)
+  await saveAvatar()
 }
 
 async function saveAvatar() {
-  if (!currentUser.value?.id || !selectedImage.value) return
+  if (!currentUser.value?.id || !selectedFile.value) return
 
   savingAvatar.value = true
   avatarErrorMessage.value = ''
   avatarSuccessMessage.value = ''
 
   try {
-    const payload = {
-      ...currentUser.value,
-      avatarUrl: selectedImage.value,
+    const uploadResponse = await uploadService.uploadAvatar(selectedFile.value)
+    const uploadedPath = uploadResponse.data?.path || ''
+
+    if (!uploadedPath) {
+      throw new Error('Upload path not received')
     }
 
-    const response = await userService.update(currentUser.value.id, payload)
+    const response = await userService.update(currentUser.value.id, {
+      avatarUrl: uploadedPath,
+    })
+
     authStore.setSessionUser(response.data)
-    selectedImage.value = ''
     avatarSuccessMessage.value = 'Profile photo updated successfully.'
-
-    if (fileInputRef.value) {
-      fileInputRef.value.value = ''
-    }
+    resetSelectedImage()
   } catch (error) {
     console.error('Error updating avatar:', error)
-    avatarErrorMessage.value = 'The profile photo could not be updated.'
+    avatarErrorMessage.value =
+      error?.response?.data?.message || 'The profile photo could not be updated.'
   } finally {
     savingAvatar.value = false
   }
@@ -258,10 +262,11 @@ function closeDeleteModal() {
 
   showDeleteModal.value = false
   deleteConfirmation.value = ''
+  deleteErrorMessage.value = ''
 }
 
 async function deleteAccount() {
-  if (!currentUser.value?.id) return
+  if (!currentUser.value?.id || deletingAccount.value) return
 
   deletingAccount.value = true
   deleteErrorMessage.value = ''
@@ -269,13 +274,18 @@ async function deleteAccount() {
   try {
     await userService.remove(currentUser.value.id)
     authStore.logout()
-    router.replace({ name: 'login' })
+    closeDeleteModal()
+    router.push({ name: 'login' })
   } catch (error) {
     console.error('Error deleting account:', error)
-    deleteErrorMessage.value = 'The account could not be deleted.'
+    deleteErrorMessage.value =
+      error?.response?.data?.message || 'The account could not be deleted.'
+  } finally {
     deletingAccount.value = false
-    showDeleteModal.value = false
-    deleteConfirmation.value = ''
   }
 }
+
+onBeforeUnmount(() => {
+  revokePreviewUrl()
+})
 </script>

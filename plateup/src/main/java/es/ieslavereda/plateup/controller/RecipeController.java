@@ -5,6 +5,7 @@ import es.ieslavereda.plateup.model.User;
 import es.ieslavereda.plateup.repository.RecipeRepository;
 import es.ieslavereda.plateup.repository.UserRepository;
 import es.ieslavereda.plateup.service.AchievementUnlockService;
+import es.ieslavereda.plateup.service.FileStorageService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @RestController
@@ -23,15 +25,18 @@ public class RecipeController {
     private final RecipeRepository repository;
     private final UserRepository userRepository;
     private final AchievementUnlockService achievementUnlockService;
+    private final FileStorageService fileStorageService;
 
     public RecipeController(
             RecipeRepository repository,
             UserRepository userRepository,
-            AchievementUnlockService achievementUnlockService
+            AchievementUnlockService achievementUnlockService,
+            FileStorageService fileStorageService
     ) {
         this.repository = repository;
         this.userRepository = userRepository;
         this.achievementUnlockService = achievementUnlockService;
+        this.fileStorageService = fileStorageService;
     }
 
     @GetMapping
@@ -79,6 +84,8 @@ public class RecipeController {
                     .body("You can only update your own recipes.");
         }
 
+        String previousImageUrl = existing.getImageUrl();
+
         recipe.setId(existing.getId());
         recipe.setUserId(existing.getUserId());
 
@@ -88,6 +95,10 @@ public class RecipeController {
 
         recipe.setUpdatedAt(LocalDateTime.now());
         Recipe updatedRecipe = repository.save(recipe);
+
+        if (!Objects.equals(previousImageUrl, updatedRecipe.getImageUrl())) {
+            fileStorageService.deleteIfManagedPath(previousImageUrl);
+        }
 
         return ResponseEntity.ok(updatedRecipe);
     }
@@ -103,7 +114,11 @@ public class RecipeController {
                     .body("You can only delete your own recipes.");
         }
 
+        String imageToDelete = existing.getImageUrl();
+
         repository.deleteById(id);
+        fileStorageService.deleteIfManagedPath(imageToDelete);
+
         return ResponseEntity.ok().build();
     }
 
