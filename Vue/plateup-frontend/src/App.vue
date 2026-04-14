@@ -9,8 +9,9 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, onMounted, onUnmounted } from 'vue'
 import { useRoute } from 'vue-router'
+import { App as CapacitorApp } from '@capacitor/app'
 import BottomNav from './components/layout/BottomNav.vue'
 import { useAuthStore } from './stores/authStore'
 
@@ -19,5 +20,24 @@ const authStore = useAuthStore()
 
 const showBottomNav = computed(() => {
   return authStore.isAuthenticated && route.name !== 'login' && route.name !== 'cooking'
+})
+
+let backButtonListener = null
+
+onMounted(async () => {
+  backButtonListener = await CapacitorApp.addListener('backButton', () => {
+    const rootPaths = ['/', '/login', '/home', '/explore', '/create', '/profile']
+
+    if (rootPaths.includes(route.path)) {
+      CapacitorApp.exitApp()
+      return
+    }
+
+    window.history.back()
+  })
+})
+
+onUnmounted(() => {
+  backButtonListener?.remove()
 })
 </script>
