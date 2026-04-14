@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-[#f6f3ee] pb-32">
+  <div class="min-h-screen bg-[var(--plateup-bg)]">
     <div v-if="detailLoading" class="container-app py-10">
       <div class="rounded-[32px] bg-white p-8 text-center text-gray-500 shadow-sm ring-1 ring-black/5">
         Loading recipe...
@@ -15,18 +15,12 @@
     <div v-else-if="recipe" class="container-app space-y-6 py-6">
       <section class="overflow-hidden rounded-[36px] bg-white shadow-sm ring-1 ring-black/5">
         <div class="relative h-80 w-full overflow-hidden">
-          <img
-            :src="recipeImage"
-            :alt="recipe.title"
-            class="h-full w-full object-cover"
-          />
+          <img :src="recipeImage" :alt="recipe.title" class="h-full w-full object-cover" />
           <div class="absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-transparent"></div>
 
-          <button
-            type="button"
+          <button type="button"
             class="absolute left-4 top-4 rounded-full bg-white/90 px-4 py-2 text-sm font-semibold text-gray-700 backdrop-blur transition hover:bg-white"
-            @click="router.back()"
-          >
+            @click="router.back()">
             Back
           </button>
 
@@ -46,17 +40,11 @@
               </div>
             </div>
 
-            <button
-              type="button"
-              class="flex items-center gap-2 rounded-full px-4 py-3 text-sm font-semibold transition"
-              :class="
-                isLikedByCurrentUser
+            <button type="button"
+              class="flex items-center gap-2 rounded-full px-4 py-3 text-sm font-semibold transition" :class="isLikedByCurrentUser
                   ? 'bg-[#f45b3f] text-white shadow-lg'
                   : 'bg-white/90 text-gray-700 hover:bg-white'
-              "
-              :disabled="likeLoading"
-              @click="toggleRecipeLike"
-            >
+                " :disabled="likeLoading" @click="toggleRecipeLike">
               <Heart class="h-5 w-5" :class="isLikedByCurrentUser ? 'fill-current' : ''" />
               {{ likesCount }}
             </button>
@@ -77,16 +65,11 @@
               </span>
             </div>
 
-            <button
-              type="button"
+            <button type="button"
               class="flex w-full items-center gap-4 rounded-[28px] bg-[#fff7f4] p-4 text-left transition hover:bg-[#ffefe8]"
-              @click="goToAuthorProfile"
-            >
-              <img
-                :src="authorAvatar"
-                :alt="authorName"
-                class="h-14 w-14 rounded-full object-cover ring-2 ring-orange-100"
-              />
+              @click="goToAuthorProfile">
+              <img :src="authorAvatar" :alt="authorName"
+                class="h-14 w-14 rounded-full object-cover ring-2 ring-orange-100" />
 
               <div class="min-w-0 flex-1">
                 <p class="text-sm text-gray-500">Recipe by</p>
@@ -96,16 +79,10 @@
                 <p class="truncate text-sm text-gray-500">@{{ authorUsername }}</p>
               </div>
 
-              <span
-                v-if="!isOwnRecipe"
-                class="rounded-full px-4 py-2 text-sm font-semibold"
-                :class="
-                  isFollowingAuthor
-                    ? 'bg-white text-gray-700 ring-1 ring-black/5'
-                    : 'bg-[#f45b3f] text-white'
-                "
-                @click.stop="toggleFollowAuthor"
-              >
+              <span v-if="!isOwnRecipe" class="rounded-full px-4 py-2 text-sm font-semibold" :class="isFollowingAuthor
+                  ? 'bg-white text-gray-700 ring-1 ring-black/5'
+                  : 'bg-[#f45b3f] text-white'
+                " @click.stop="toggleFollowAuthor">
                 {{ followLoading ? 'Loading...' : isFollowingAuthor ? 'Following' : 'Follow' }}
               </span>
             </button>
@@ -148,17 +125,10 @@
         </div>
 
         <div v-if="ingredientChecklist.length" class="space-y-3">
-          <label
-            v-for="ingredient in ingredientChecklist"
-            :key="ingredient.key"
-            class="flex items-start gap-3 rounded-2xl bg-gray-50 px-4 py-3"
-          >
-            <input
-              v-model="checkedIngredients"
-              :value="ingredient.key"
-              type="checkbox"
-              class="mt-1 h-4 w-4 rounded border-gray-300 text-[#f45b3f] focus:ring-[#f45b3f]"
-            />
+          <label v-for="ingredient in ingredientChecklist" :key="ingredient.key"
+            class="flex items-start gap-3 rounded-2xl bg-gray-50 px-4 py-3">
+            <input v-model="checkedIngredients" :value="ingredient.key" type="checkbox"
+              class="mt-1 h-4 w-4 rounded border-gray-300 text-[#f45b3f] focus:ring-[#f45b3f]" />
 
             <div class="min-w-0 flex-1">
               <div class="flex items-center justify-between gap-4">
@@ -175,10 +145,7 @@
           </label>
         </div>
 
-        <div
-          v-else
-          class="rounded-2xl bg-gray-50 px-4 py-4 text-sm text-gray-500"
-        >
+        <div v-else class="rounded-2xl bg-gray-50 px-4 py-4 text-sm text-gray-500">
           No ingredients added for this recipe yet.
         </div>
       </section>
@@ -190,12 +157,10 @@
         </div>
 
         <div v-if="orderedRecipeSteps.length" class="space-y-3">
-          <article
-            v-for="step in orderedRecipeSteps"
-            :key="step.id || step.orderIndex"
-            class="grid grid-cols-[auto,1fr] gap-4 rounded-2xl bg-gray-50 p-4"
-          >
-            <div class="flex h-10 w-10 items-center justify-center rounded-full bg-[#f45b3f] text-sm font-bold text-white">
+          <article v-for="step in orderedRecipeSteps" :key="step.id || step.orderIndex"
+            class="grid grid-cols-[auto,1fr] gap-4 rounded-2xl bg-gray-50 p-4">
+            <div
+              class="flex h-10 w-10 items-center justify-center rounded-full bg-[#f45b3f] text-sm font-bold text-white">
               {{ step.orderIndex }}
             </div>
 
@@ -211,10 +176,7 @@
           </article>
         </div>
 
-        <div
-          v-else
-          class="rounded-2xl bg-gray-50 px-4 py-4 text-sm text-gray-500"
-        >
+        <div v-else class="rounded-2xl bg-gray-50 px-4 py-4 text-sm text-gray-500">
           No steps available for this recipe yet.
         </div>
       </section>
@@ -222,12 +184,11 @@
 
     <!-- ── Start Cooking button ── -->
     <button
-  class="fixed bottom-[calc(4.75rem+env(safe-area-inset-bottom,0px))] left-1/2 z-40 flex w-[calc(100%-2rem)] max-w-md -translate-x-1/2 items-center justify-center gap-2 rounded-full bg-[#f45b3f] px-6 py-4 text-base font-bold text-white shadow-xl transition hover:bg-[#e24a2e]"
-  @click="startCooking"
->
-  <ChefHat class="h-5 w-5" />
-  <span>Start Cooking</span>
-</button>
+      class="fixed bottom-[calc(4.75rem+env(safe-area-inset-bottom,0px))] left-1/2 z-40 flex w-[calc(100%-2rem)] max-w-md -translate-x-1/2 items-center justify-center gap-2 rounded-full bg-[#f45b3f] px-6 py-4 text-base font-bold text-white shadow-xl transition hover:bg-[#e24a2e]"
+      @click="startCooking">
+      <ChefHat class="h-5 w-5" />
+      <span>Start Cooking</span>
+    </button>
   </div>
 </template>
 
