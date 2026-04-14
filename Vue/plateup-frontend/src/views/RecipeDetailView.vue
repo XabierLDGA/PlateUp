@@ -222,7 +222,7 @@
 
     <!-- ── Start Cooking button ── -->
     <button
-  class="fixed bottom-24 left-1/2 z-40 mb-5 flex w-[calc(100%-2rem)] max-w-md -translate-x-1/2 items-center justify-center gap-2 rounded-full bg-[#f45b3f] px-6 py-4 text-base font-bold text-white shadow-xl transition hover:bg-[#e24a2e]"
+  class="fixed bottom-[calc(4.75rem+env(safe-area-inset-bottom,0px))] left-1/2 z-40 flex w-[calc(100%-2rem)] max-w-md -translate-x-1/2 items-center justify-center gap-2 rounded-full bg-[#f45b3f] px-6 py-4 text-base font-bold text-white shadow-xl transition hover:bg-[#e24a2e]"
   @click="startCooking"
 >
   <ChefHat class="h-5 w-5" />

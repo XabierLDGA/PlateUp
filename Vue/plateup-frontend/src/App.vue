@@ -1,7 +1,7 @@
 <template>
   <div
-    class="min-h-screen"
-    :class="showBottomNav ? 'pb-24' : 'pb-0'"
+    class="min-h-screen bg-[var(--plateup-bg)]"
+    :class="showBottomNav ? 'pb-[calc(4.5rem+env(safe-area-inset-bottom,0px))]' : 'pb-0'"
   >
     <router-view />
     <BottomNav v-if="showBottomNav" />
