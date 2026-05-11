@@ -1,0 +1,13 @@
+Apartados que existen en la bbdd pero que no se usan, quedan para posibles cambios para añadir a futuro.
+
+MEDIA
+NOTIFICATIONS
+REPORTS
+AUDITLOGS
+COLLECTIONS
+COLLECTIONRECIPES
+UTENSILS
+RECIPEUTENSILS
+COMMENTS
+CHALLENGES
+USERCHALLENGES
