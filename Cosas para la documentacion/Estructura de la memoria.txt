@@ -31,6 +31,8 @@ Usuarios, funcionalidades, requisitos funcionales y requisitos no funcionales.
 
 Riesgos técnicos, legales, ergonómicos, de seguridad y soluciones.
 
+
+
 9. Stack tecnológico
 
 Tecnologías usadas: backend, frontend, base de datos, móvil, Git, IA, herramientas.
