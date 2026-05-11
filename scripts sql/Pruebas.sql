@@ -33,7 +33,7 @@ CREATE TABLE Recipes (
     user_id BIGINT NOT NULL,
     title VARCHAR(150) NOT NULL,
     description TEXT,
-    category VARCHAR(50) NOT NULL DEFAULT 'Rápido',
+    category VARCHAR(50) NOT NULL DEFAULT 'Quick',
     image_url VARCHAR(500),
     servings INT,
     total_minutes INT,
@@ -350,15 +350,15 @@ VALUES
 INSERT INTO Recipes (user_id, title, description, category, image_url, servings, total_minutes, difficulty, created_at)
 VALUES
 (1, 'Pasta al pesto', 'Receta clásica italiana con albahaca y piñones.', 'Pasta', 'https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=1200&q=80', 2, 25, 'easy', '2026-03-17 13:24:00'),
-(2, 'Tiramisú casero', 'Postre italiano con mascarpone y café.', 'Postre', 'https://images.unsplash.com/photo-1512058564366-18510be2db19?auto=format&fit=crop&w=1200&q=80', 6, 40, 'medium', '2026-03-18 20:11:00'),
-(3, 'Arroz con verduras', 'Rápido, barato y perfecto para estudiantes.', 'Arroz', 'https://images.unsplash.com/photo-1473093295043-cdd812d0e601?auto=format&fit=crop&w=1200&q=80', 2, 20, 'easy', '2026-03-19 09:42:00'),
-(4, 'Tofu al curry', 'Sabor potente y cero carne.', 'Vegana', 'https://images.unsplash.com/photo-1482049016688-2d3e1b311543?auto=format&fit=crop&w=1200&q=80', 3, 30, 'medium', '2026-03-20 14:37:00'),
-(5, 'Brownie loco', 'Mucho chocolate y poca vergüenza.', 'Postre', 'https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?auto=format&fit=crop&w=1200&q=80', 8, 35, 'medium', '2026-03-21 18:56:00'),
-(6, 'Croquetas de pollo', 'Receta de la abuela, infalible.', 'Carne', 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=1200&q=80', 6, 70, 'hard', '2026-03-22 12:08:00'),
+(2, 'Tiramisú casero', 'Postre italiano con mascarpone y café.', 'Dessert', 'https://images.unsplash.com/photo-1512058564366-18510be2db19?auto=format&fit=crop&w=1200&q=80', 6, 40, 'medium', '2026-03-18 20:11:00'),
+(3, 'Arroz con verduras', 'Rápido, barato y perfecto para estudiantes.', 'Rice', 'https://images.unsplash.com/photo-1473093295043-cdd812d0e601?auto=format&fit=crop&w=1200&q=80', 2, 20, 'easy', '2026-03-19 09:42:00'),
+(4, 'Tofu al curry', 'Sabor potente y cero carne.', 'Vegan', 'https://images.unsplash.com/photo-1482049016688-2d3e1b311543?auto=format&fit=crop&w=1200&q=80', 3, 30, 'medium', '2026-03-20 14:37:00'),
+(5, 'Brownie loco', 'Mucho chocolate y poca vergüenza.', 'Dessert', 'https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?auto=format&fit=crop&w=1200&q=80', 8, 35, 'medium', '2026-03-21 18:56:00'),
+(6, 'Croquetas de pollo', 'Receta de la abuela, infalible.', 'Meat', 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=1200&q=80', 6, 70, 'hard', '2026-03-22 12:08:00'),
 (7, 'Patatas bravas crujientes', 'Con salsa de verdad, no ketchup.', 'Snack', 'https://images.unsplash.com/photo-1529042410759-befb1204b468?auto=format&fit=crop&w=1200&q=80', 4, 25, 'easy', '2026-03-22 19:21:00'),
-(8, 'Ensalada detox', 'Verde, ligera y con chispa.', 'Ensalada', 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=1200&q=80', 2, 10, 'easy', '2026-03-23 08:17:00'),
-(9, 'Bocadillo de tortilla', 'Ideal para excursiones.', 'Estudiante', 'https://images.unsplash.com/photo-1539252554453-80ab65ce3586?auto=format&fit=crop&w=1200&q=80', 1, 15, 'easy', '2026-03-23 10:03:00'),
-(10, 'Pan casero rápido', 'Hecho sin amasado, fácil y rico.', 'Rápido', 'https://images.unsplash.com/photo-1608198093002-ad4e005484ec?auto=format&fit=crop&w=1200&q=80', 8, 180, 'medium', '2026-03-23 11:26:00');
+(8, 'Ensalada detox', 'Verde, ligera y con chispa.', 'Salad', 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=1200&q=80', 2, 10, 'easy', '2026-03-23 08:17:00'),
+(9, 'Bocadillo de tortilla', 'Ideal para excursiones.', 'Student', 'https://images.unsplash.com/photo-1539252554453-80ab65ce3586?auto=format&fit=crop&w=1200&q=80', 1, 15, 'easy', '2026-03-23 10:03:00'),
+(10, 'Pan casero rápido', 'Hecho sin amasado, fácil y rico.', 'Quick', 'https://images.unsplash.com/photo-1608198093002-ad4e005484ec?auto=format&fit=crop&w=1200&q=80', 8, 180, 'medium', '2026-03-23 11:26:00');
 
 -- ===========================================
 -- RECIPE STEPS

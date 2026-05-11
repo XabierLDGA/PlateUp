@@ -1,22 +1,41 @@
 export const RECIPE_CATEGORIES = [
-  'Vegana',
-  'Vegetariana',
-  'Carne',
-  'Pescado',
+  'Vegan',
+  'Vegetarian',
+  'Meat',
+  'Fish',
   'Pasta',
-  'Arroz',
-  'Sopa',
-  'Ensalada',
-  'Desayuno',
-  'Postre',
-  'Rápido',
-  'Estudiante',
-  'Saludable',
+  'Rice',
+  'Soup',
+  'Salad',
+  'Breakfast',
+  'Dessert',
+  'Quick',
+  'Student',
+  'Healthy',
   'Snack',
 ]
 
-export const DEFAULT_RECIPE_CATEGORY = 'Rápido'
+export const DEFAULT_RECIPE_CATEGORY = 'Quick'
+
+const LEGACY_CATEGORY_MAP = {
+  Vegana: 'Vegan',
+  Vegetariana: 'Vegetarian',
+  Carne: 'Meat',
+  Pescado: 'Fish',
+  Arroz: 'Rice',
+  Sopa: 'Soup',
+  Ensalada: 'Salad',
+  Desayuno: 'Breakfast',
+  Postre: 'Dessert',
+  Rápido: 'Quick',
+  Estudiante: 'Student',
+  Saludable: 'Healthy',
+}
 
 export function normalizeRecipeCategory(category) {
-  return RECIPE_CATEGORIES.includes(category) ? category : DEFAULT_RECIPE_CATEGORY
+  const normalizedCategory = LEGACY_CATEGORY_MAP[category] || category
+
+  return RECIPE_CATEGORIES.includes(normalizedCategory)
+    ? normalizedCategory
+    : DEFAULT_RECIPE_CATEGORY
 }

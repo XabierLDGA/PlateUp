@@ -238,11 +238,6 @@
           <span>›</span>
         </button>
 
-        <button class="flex w-full items-center justify-between rounded-2xl bg-gray-50 px-4 py-4 text-sm font-semibold text-gray-700">
-          <span>App settings</span>
-          <span>›</span>
-        </button>
-
         <button
           @click="logout"
           class="flex w-full items-center justify-between rounded-2xl bg-red-50 px-4 py-4 text-sm font-semibold text-red-600"
