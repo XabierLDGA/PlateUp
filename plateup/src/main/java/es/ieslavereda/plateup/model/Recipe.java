@@ -1,6 +1,7 @@
 package es.ieslavereda.plateup.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
 import java.time.LocalDateTime;
 
 @Entity
@@ -14,8 +15,10 @@ public class Recipe {
     @Column(name = "user_id")
     private Long userId;
 
+    @NotBlank(message = "Title is required")
     private String title;
     private String description;
+    @NotBlank(message = "Category is required")
     private String category;
 
     @Column(name = "image_url")

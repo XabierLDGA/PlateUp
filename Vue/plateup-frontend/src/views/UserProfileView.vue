@@ -223,9 +223,11 @@ const activeTab = ref('recipes')
 
 const visitedUser = ref(null)
 const userRecipes = ref([])
-const follows = ref([])
 const achievements = ref([])
 const userAchievements = ref([])
+const followersCount = ref(0)
+const followingCount = ref(0)
+const currentUserFollowsVisited = ref(false)
 
 const numericUserId = computed(() => Number(props.id))
 const currentUserId = computed(() => Number(authStore.currentUser?.id || 0))
@@ -233,29 +235,10 @@ const currentUserId = computed(() => Number(authStore.currentUser?.id || 0))
 const userAvatar = computed(() => getUserAvatar(visitedUser.value))
 
 const isOwnProfile = computed(() => {
-  return currentUserId.value && numericUserId.value === currentUserId.value
+  return currentUserId.value > 0 && numericUserId.value === currentUserId.value
 })
 
-const followersCount = computed(() => {
-  if (!numericUserId.value) return 0
-  return follows.value.filter((item) => Number(item.followedId) === numericUserId.value && item.status === 'accepted').length
-})
-
-const followingCount = computed(() => {
-  if (!numericUserId.value) return 0
-  return follows.value.filter((item) => Number(item.followerId) === numericUserId.value && item.status === 'accepted').length
-})
-
-const isFollowingVisitedUser = computed(() => {
-  if (!currentUserId.value || !numericUserId.value || isOwnProfile.value) return false
-
-  return follows.value.some(
-    (item) =>
-      Number(item.followerId) === currentUserId.value &&
-      Number(item.followedId) === numericUserId.value &&
-      item.status === 'accepted'
-  )
-})
+const isFollowingVisitedUser = computed(() => currentUserFollowsVisited.value)
 
 const canViewRecipeBook = computed(() => {
   return isOwnProfile.value || isFollowingVisitedUser.value
@@ -313,25 +296,15 @@ async function toggleFollow() {
   try {
     if (isFollowingVisitedUser.value) {
       await followService.remove(currentUserId.value, numericUserId.value)
-
-      follows.value = follows.value.filter(
-        (item) =>
-          !(
-            Number(item.followerId) === currentUserId.value &&
-            Number(item.followedId) === numericUserId.value
-          )
-      )
+      currentUserFollowsVisited.value = false
+      followersCount.value = Math.max(0, followersCount.value - 1)
     } else {
       await followService.create({
         followerId: currentUserId.value,
         followedId: numericUserId.value,
       })
-
-      follows.value.push({
-        followerId: currentUserId.value,
-        followedId: numericUserId.value,
-        status: 'accepted',
-      })
+      currentUserFollowsVisited.value = true
+      followersCount.value += 1
     }
   } catch (error) {
     console.error('Error toggling follow in UserProfileView:', error)
@@ -344,6 +317,9 @@ async function loadUserProfile() {
   loading.value = true
   errorMessage.value = ''
   activeTab.value = 'recipes'
+  followersCount.value = 0
+  followingCount.value = 0
+  currentUserFollowsVisited.value = false
 
   try {
     await authStore.initialize()
@@ -354,34 +330,45 @@ async function loadUserProfile() {
       throw new Error('Invalid user id.')
     }
 
+    const ownProfile = currentUserId.value > 0 && userId === currentUserId.value
+
     const [
       userResponse,
       recipesResponse,
-      followsResponse,
+      followersResponse,
+      followingResponse,
       achievementsResponse,
       userAchievementsResponse,
-    ] = await Promise.all([
+      currentFollowResponse,
+    ] = await Promise.allSettled([
       userService.getById(userId),
       recipeService.getByUserId(userId),
-      followService.getAll(),
+      followService.getFollowers(userId),
+      followService.getFollowing(userId),
       achievementService.getAll(),
       userAchievementService.getByUserId(userId),
+      !ownProfile && currentUserId.value
+        ? followService.getById(currentUserId.value, userId)
+        : Promise.resolve({ data: null }),
     ])
 
-    if (!userResponse.data) {
+    if (userResponse.status === 'rejected' || !userResponse.value?.data) {
       throw new Error('User not found.')
     }
 
-    visitedUser.value = userResponse.data
-    userRecipes.value = recipesResponse.data || []
-    follows.value = followsResponse.data || []
-    achievements.value = achievementsResponse.data || []
-    userAchievements.value = userAchievementsResponse.data || []
+    visitedUser.value = userResponse.value.data
+    userRecipes.value = recipesResponse.status === 'fulfilled' ? recipesResponse.value.data || [] : []
+    followersCount.value = followersResponse.status === 'fulfilled' ? followersResponse.value.data?.length || 0 : 0
+    followingCount.value = followingResponse.status === 'fulfilled' ? followingResponse.value.data?.length || 0 : 0
+    achievements.value = achievementsResponse.status === 'fulfilled' ? achievementsResponse.value.data || [] : []
+    userAchievements.value = userAchievementsResponse.status === 'fulfilled' ? userAchievementsResponse.value.data || [] : []
+
+    const followData = currentFollowResponse.status === 'fulfilled' ? currentFollowResponse.value?.data : null
+    currentUserFollowsVisited.value = followData != null && followData.status === 'accepted'
   } catch (error) {
     console.error('Error loading visited user profile:', error)
     visitedUser.value = null
     userRecipes.value = []
-    follows.value = []
     achievements.value = []
     userAchievements.value = []
     errorMessage.value = 'The user profile could not be loaded.'

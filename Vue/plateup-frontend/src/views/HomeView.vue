@@ -258,7 +258,7 @@ async function loadFeedPage(reset = false) {
   }
 
   try {
-    const response = await recipeService.getFeed(currentUserId.value, {
+    const response = await recipeService.getFeed({
       page: currentPage.value,
       size: PAGE_SIZE,
       category: activeFilter.value !== 'All' ? activeFilter.value : undefined,

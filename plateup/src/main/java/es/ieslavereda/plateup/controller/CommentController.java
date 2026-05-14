@@ -5,6 +5,7 @@ import es.ieslavereda.plateup.model.Comment;
 import es.ieslavereda.plateup.model.User;
 import es.ieslavereda.plateup.repository.CommentRepository;
 import es.ieslavereda.plateup.repository.UserRepository;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -44,7 +45,7 @@ public class CommentController {
     }
 
     @PostMapping
-    public ResponseEntity<?> create(@RequestBody Comment comment) {
+    public ResponseEntity<?> create(@Valid @RequestBody Comment comment) {
         User authenticatedUser = getAuthenticatedUser();
 
         comment.setUserId(authenticatedUser.getId());
@@ -58,7 +59,7 @@ public class CommentController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> update(@PathVariable Long id, @RequestBody Comment comment) {
+    public ResponseEntity<?> update(@PathVariable Long id, @Valid @RequestBody Comment comment) {
         Optional<Comment> existingOptional = repository.findById(id);
 
         if (existingOptional.isEmpty()) {

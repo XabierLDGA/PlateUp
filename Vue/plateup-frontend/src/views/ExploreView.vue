@@ -162,11 +162,7 @@ function resolveCategory(recipe) {
 }
 
 function isFollowingUser(userId) {
-  return follows.value.some(
-    (follow) =>
-      Number(follow.followerId) === currentUserId.value &&
-      Number(follow.followedId) === Number(userId)
-  )
+  return follows.value.some((follow) => Number(follow.followedId) === Number(userId))
 }
 
 function goToUserProfile(userId) {
@@ -225,7 +221,7 @@ async function loadData() {
   const [usersResponse, recipesResponse, followsResponse] = await Promise.all([
     userService.getAll(),
     recipeService.getAll(),
-    followService.getAll(),
+    currentUserId.value ? followService.getFollowing(currentUserId.value) : Promise.resolve({ data: [] }),
   ])
 
   users.value = usersResponse.data || []

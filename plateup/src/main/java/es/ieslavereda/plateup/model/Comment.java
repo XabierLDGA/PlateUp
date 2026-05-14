@@ -1,6 +1,7 @@
 package es.ieslavereda.plateup.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
 import java.time.LocalDateTime;
 
 @Entity
@@ -17,6 +18,7 @@ public class Comment {
     @Column(name = "recipe_id")
     private Long recipeId;
 
+    @NotBlank(message = "Comment text is required")
     private String text;
 
     @Column(name = "created_at")

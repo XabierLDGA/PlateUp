@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import es.ieslavereda.plateup.model.Recipe;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -19,6 +20,8 @@ public interface RecipeRepository extends JpaRepository<Recipe, Long> {
     long countByUserId(Long userId);
 
     Optional<Recipe> findTopByUserIdOrderByCreatedAtDescIdDesc(Long userId);
+
+    List<Recipe> findByIdIn(Collection<Long> ids);
 
     @Query("SELECT r.userId FROM Recipe r WHERE r.id = :recipeId")
     Optional<Long> findUserIdById(@Param("recipeId") Long recipeId);

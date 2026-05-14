@@ -8,6 +8,7 @@ import es.ieslavereda.plateup.repository.RecipeRepository;
 import es.ieslavereda.plateup.repository.UserRepository;
 import es.ieslavereda.plateup.service.AchievementUnlockService;
 import es.ieslavereda.plateup.service.FileStorageService;
+import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
@@ -50,11 +51,11 @@ public class RecipeController {
 
     @GetMapping("/feed")
     public ResponseEntity<Page<Recipe>> getFeed(
-            @RequestParam Long userId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(required = false) String category
     ) {
+        Long userId = getAuthenticatedUser().getId();
         PageRequest pageable = PageRequest.of(page, size);
         Page<Recipe> result = (category != null && !category.isBlank())
                 ? repository.findFeedForUserAndCategory(userId, category, pageable)
@@ -65,6 +66,12 @@ public class RecipeController {
     @GetMapping("/count/{userId}")
     public long countByUser(@PathVariable Long userId) {
         return repository.countByUserId(userId);
+    }
+
+    @GetMapping("/by-ids")
+    public List<Recipe> getByIds(@RequestParam List<Long> ids) {
+        if (ids == null || ids.isEmpty()) return List.of();
+        return repository.findByIdIn(ids);
     }
 
     @GetMapping("/{id}")
@@ -78,7 +85,7 @@ public class RecipeController {
     }
 
     @PostMapping
-    public ResponseEntity<?> create(@RequestBody Recipe recipe) {
+    public ResponseEntity<?> create(@Valid @RequestBody Recipe recipe) {
         User authenticatedUser = getAuthenticatedUser();
         LocalDateTime now = LocalDateTime.now();
 
@@ -97,7 +104,7 @@ public class RecipeController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> update(@PathVariable Long id, @RequestBody Recipe recipe) {
+    public ResponseEntity<?> update(@PathVariable Long id, @Valid @RequestBody Recipe recipe) {
         Recipe existing = repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Recipe not found"));
 

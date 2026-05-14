@@ -20,6 +20,10 @@ export default {
     return api.get(`/follows/following/${userId}`)
   },
 
+  getFollowers(userId) {
+    return api.get(`/follows/followers/${userId}`)
+  },
+
   getById(followerId, followedId) {
     const ids = normalizeIds(followerId, followedId)
     return api.get(`/follows/${ids.followerId}/${ids.followedId}`)

@@ -316,7 +316,8 @@ const activeTab = ref('recipes')
 const myRecipes = ref([])
 const cookedEntries = ref([])
 const allRecipes = ref([])
-const follows = ref([])
+const followersCount = ref(0)
+const followingCount = ref(0)
 const achievements = ref([])
 const userAchievements = ref([])
 const deletingRecipeId = ref(null)
@@ -326,24 +327,6 @@ const recipeToDelete = ref(null)
 
 const currentUser = computed(() => authStore.currentUser)
 const userAvatar = computed(() => getUserAvatar(currentUser.value))
-
-const followersCount = computed(() => {
-  if (!currentUser.value?.id) return 0
-  return follows.value.filter(
-    (item) =>
-      Number(item.followedId) === Number(currentUser.value.id) &&
-      item.status === 'accepted'
-  ).length
-})
-
-const followingCount = computed(() => {
-  if (!currentUser.value?.id) return 0
-  return follows.value.filter(
-    (item) =>
-      Number(item.followerId) === Number(currentUser.value.id) &&
-      item.status === 'accepted'
-  ).length
-})
 
 const earnedAchievements = computed(() => {
   if (!currentUser.value?.id) return []
@@ -456,26 +439,34 @@ async function loadData() {
 
   const [
     recipesResponse,
-    followsResponse,
+    followersResponse,
+    followingResponse,
     achievementsResponse,
     userAchievementsResponse,
     cookedResponse,
-    allRecipesResponse,
   ] = await Promise.allSettled([
     recipeService.getByUserId(userId),
-    followService.getAll(),
+    followService.getFollowers(userId),
+    followService.getFollowing(userId),
     achievementService.getAll(),
     userAchievementService.getByUserId(userId),
     cookedRecipeService.getByUserId(userId),
-    recipeService.getAll(),
   ])
 
   myRecipes.value = recipesResponse.status === 'fulfilled' ? recipesResponse.value.data || [] : []
-  follows.value = followsResponse.status === 'fulfilled' ? followsResponse.value.data || [] : []
+  followersCount.value = followersResponse.status === 'fulfilled' ? followersResponse.value.data?.length || 0 : 0
+  followingCount.value = followingResponse.status === 'fulfilled' ? followingResponse.value.data?.length || 0 : 0
   achievements.value = achievementsResponse.status === 'fulfilled' ? achievementsResponse.value.data || [] : []
   userAchievements.value = userAchievementsResponse.status === 'fulfilled' ? userAchievementsResponse.value.data || [] : []
   cookedEntries.value = cookedResponse.status === 'fulfilled' ? cookedResponse.value.data || [] : []
-  allRecipes.value = allRecipesResponse.status === 'fulfilled' ? allRecipesResponse.value.data || [] : []
+
+  const cookedIds = [...new Set(cookedEntries.value.map((c) => Number(c.recipeId)).filter(Boolean))]
+  if (cookedIds.length > 0) {
+    const allRecipesResponse = await recipeService.getByIds(cookedIds)
+    allRecipes.value = allRecipesResponse.data || []
+  } else {
+    allRecipes.value = []
+  }
 }
 
 onMounted(loadData)

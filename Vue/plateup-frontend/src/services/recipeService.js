@@ -25,10 +25,15 @@ export default {
     return api.delete(`/recipes/${id}`)
   },
 
-  getFeed(userId, { page = 0, size = 10, category } = {}) {
-    const params = { userId, page, size }
+  getFeed({ page = 0, size = 10, category } = {}) {
+    const params = { page, size }
     if (category && category !== 'All') params.category = category
     return api.get('/recipes/feed', { params })
+  },
+
+  getByIds(ids) {
+    if (!ids || ids.length === 0) return Promise.resolve({ data: [] })
+    return api.get('/recipes/by-ids', { params: { ids } })
   },
 
   countByUser(userId) {
