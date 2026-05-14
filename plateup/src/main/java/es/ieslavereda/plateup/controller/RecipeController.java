@@ -8,6 +8,8 @@ import es.ieslavereda.plateup.repository.RecipeRepository;
 import es.ieslavereda.plateup.repository.UserRepository;
 import es.ieslavereda.plateup.service.AchievementUnlockService;
 import es.ieslavereda.plateup.service.FileStorageService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -44,6 +46,25 @@ public class RecipeController {
     @GetMapping
     public List<Recipe> getAll() {
         return repository.findAllByOrderByCreatedAtDescIdDesc();
+    }
+
+    @GetMapping("/feed")
+    public ResponseEntity<Page<Recipe>> getFeed(
+            @RequestParam Long userId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String category
+    ) {
+        PageRequest pageable = PageRequest.of(page, size);
+        Page<Recipe> result = (category != null && !category.isBlank())
+                ? repository.findFeedForUserAndCategory(userId, category, pageable)
+                : repository.findFeedForUser(userId, pageable);
+        return ResponseEntity.ok(result);
+    }
+
+    @GetMapping("/count/{userId}")
+    public long countByUser(@PathVariable Long userId) {
+        return repository.countByUserId(userId);
     }
 
     @GetMapping("/{id}")

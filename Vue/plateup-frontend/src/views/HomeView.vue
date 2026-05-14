@@ -25,7 +25,7 @@
       <button
         v-for="item in filters"
         :key="item"
-        @click="activeFilter = item"
+        @click="changeFilter(item)"
         class="shrink-0 rounded-full px-4 py-2 text-sm font-semibold transition"
         :class="
           activeFilter === item
@@ -67,7 +67,7 @@
     <section class="space-y-4">
       <div class="flex items-center justify-between">
         <h2 class="text-xl font-bold text-gray-900">Fresh from the kitchen</h2>
-        <span class="text-sm font-medium text-[#f45b3f]">{{ filteredRecipes.length }} recipes</span>
+        <span class="text-sm font-medium text-[#f45b3f]">{{ feedRecipes.length }} recipes</span>
       </div>
 
       <div
@@ -85,7 +85,7 @@
       </div>
 
       <div
-        v-else-if="filteredRecipes.length === 0"
+        v-else-if="feedRecipes.length === 0"
         class="rounded-3xl bg-white p-6 text-center text-gray-500 shadow-sm ring-1 ring-black/5"
       >
         Follow more people to see their recipes here.
@@ -93,7 +93,7 @@
 
       <div v-else class="space-y-5">
         <RecipeCard
-          v-for="recipe in filteredRecipes"
+          v-for="recipe in feedRecipes"
           :key="recipe.id"
           :recipe="recipe"
           :author="getAuthorByUserId(recipe.userId)"
@@ -102,37 +102,58 @@
           :like-loading="likeLoadingRecipeId === Number(recipe.id)"
           @toggle-like="toggleRecipeLike"
         />
+
+        <div ref="scrollSentinel" class="h-4" />
+
+        <div
+          v-if="loadingMore"
+          class="rounded-3xl bg-white p-4 text-center text-sm text-gray-500 shadow-sm ring-1 ring-black/5"
+        >
+          Loading more...
+        </div>
+
+        <div
+          v-else-if="!hasMoreRecipes && feedRecipes.length > 0"
+          class="rounded-3xl bg-white p-4 text-center text-sm text-gray-400 shadow-sm ring-1 ring-black/5"
+        >
+          You've seen all the recipes!
+        </div>
       </div>
     </section>
   </div>
 </template>
 
 <script setup>
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/authStore'
 import RecipeCard from '../components/recipes/RecipeCard.vue'
 import recipeService from '../services/recipeService'
 import userService from '../services/userService'
 import likeService from '../services/likeService'
-import followService from '../services/followService'
 import achievementService from '../services/achievementService'
 import userAchievementService from '../services/userAchievementService'
 import { getUserAvatar } from '../utils/userAvatar'
-import { RECIPE_CATEGORIES, normalizeRecipeCategory } from '../utils/recipeCategories'
+import { RECIPE_CATEGORIES } from '../utils/recipeCategories'
+
+const PAGE_SIZE = 10
 
 const router = useRouter()
 const authStore = useAuthStore()
 
 const loading = ref(true)
+const loadingMore = ref(false)
 const errorMessage = ref('')
-const recipes = ref([])
+const feedRecipes = ref([])
 const users = ref([])
 const likes = ref([])
-const follows = ref([])
 const achievements = ref([])
 const userAchievements = ref([])
 const likeLoadingRecipeId = ref(null)
+const currentPage = ref(0)
+const hasMoreRecipes = ref(true)
+const scrollSentinel = ref(null)
+let observer = null
 
 const filters = ['All', ...RECIPE_CATEGORIES]
 const activeFilter = ref('All')
@@ -140,51 +161,12 @@ const activeFilter = ref('All')
 const currentUserId = computed(() => Number(authStore.currentUser?.id || 0))
 const currentUserAvatar = computed(() => getUserAvatar(authStore.currentUser))
 
-const followedUserIds = computed(() => {
-  return follows.value.map((follow) => Number(follow.followedId))
-})
+const userRecipeCountRef = ref(0)
 
-function getRecipeTimestamp(recipe) {
-  const created = recipe?.createdAt ? new Date(recipe.createdAt).getTime() : NaN
-  if (!Number.isNaN(created)) return created
-
-  const updated = recipe?.updatedAt ? new Date(recipe.updatedAt).getTime() : NaN
-  if (!Number.isNaN(updated)) return updated
-
-  return 0
-}
-
-const visibleFeedRecipes = computed(() => {
-  if (!currentUserId.value) return []
-
-  return [...recipes.value]
-    .filter((recipe) => {
-      const authorId = Number(recipe.userId)
-      return authorId === currentUserId.value || followedUserIds.value.includes(authorId)
-    })
-    .sort((a, b) => {
-      const timeA = getRecipeTimestamp(a)
-      const timeB = getRecipeTimestamp(b)
-
-      if (timeA !== timeB) {
-        return timeB - timeA
-      }
-
-      return Number(b?.id || 0) - Number(a?.id || 0)
-    })
-})
-
-const userRecipeCount = computed(() => {
-  if (!currentUserId.value) return 0
-
-  return recipes.value.filter(
-    (recipe) => Number(recipe.userId) === currentUserId.value
-  ).length
-})
+const userRecipeCount = computed(() => userRecipeCountRef.value)
 
 const achievementsCount = computed(() => {
   if (!currentUserId.value) return 0
-
   return userAchievements.value.filter(
     (item) => Number(item.user_id) === currentUserId.value
   ).length
@@ -192,28 +174,18 @@ const achievementsCount = computed(() => {
 
 const totalAchievementPoints = computed(() => {
   if (!currentUserId.value) return 0
-
   return userAchievements.value
     .filter((item) => Number(item.user_id) === currentUserId.value)
     .reduce((sum, item) => {
       const achievement = achievements.value.find(
-        (achievementItem) => Number(achievementItem.id) === Number(item.achievement_id)
+        (a) => Number(a.id) === Number(item.achievement_id)
       )
-
       return sum + (achievement?.points || 0)
     }, 0)
 })
 
 const streakDays = computed(() => {
   return Number(authStore.currentUser?.streakCount || 0)
-})
-
-const filteredRecipes = computed(() => {
-  if (activeFilter.value === 'All') return visibleFeedRecipes.value
-
-  return visibleFeedRecipes.value.filter((recipe) => {
-    return normalizeRecipeCategory(recipe.category) === activeFilter.value
-  })
 })
 
 function getAuthorByUserId(userId) {
@@ -226,7 +198,6 @@ function getLikesCount(recipeId) {
 
 function isRecipeLikedByCurrentUser(recipeId) {
   if (!currentUserId.value) return false
-
   return likes.value.some(
     (like) =>
       Number(like.userId) === currentUserId.value &&
@@ -236,32 +207,20 @@ function isRecipeLikedByCurrentUser(recipeId) {
 
 async function toggleRecipeLike(recipe) {
   const recipeId = Number(recipe?.id)
-
-  if (!currentUserId.value || !recipeId || likeLoadingRecipeId.value === recipeId) {
-    return
-  }
+  if (!currentUserId.value || !recipeId || likeLoadingRecipeId.value === recipeId) return
 
   likeLoadingRecipeId.value = recipeId
 
   try {
     if (isRecipeLikedByCurrentUser(recipeId)) {
       await likeService.remove(currentUserId.value, recipeId)
-
       likes.value = likes.value.filter(
         (like) =>
-          !(
-            Number(like.userId) === currentUserId.value &&
-            Number(like.recipeId) === recipeId
-          )
+          !(Number(like.userId) === currentUserId.value && Number(like.recipeId) === recipeId)
       )
     } else {
-      const payload = {
-        userId: currentUserId.value,
-        recipeId,
-      }
-
+      const payload = { userId: currentUserId.value, recipeId }
       const response = await likeService.create(payload)
-
       likes.value.push(response.data || payload)
 
       const refreshedAchievements = await userAchievementService.getByUserId(currentUserId.value)
@@ -278,6 +237,77 @@ function goToCurrentUserProfile() {
   router.push({ name: 'profile' })
 }
 
+async function loadFeedPage(reset = false) {
+  if (!currentUserId.value) return
+
+  if (reset) {
+    currentPage.value = 0
+    hasMoreRecipes.value = true
+    feedRecipes.value = []
+  }
+
+  if (!hasMoreRecipes.value) return
+
+  const isFirstPage = currentPage.value === 0
+  if (isFirstPage) {
+    loading.value = true
+  } else {
+    loadingMore.value = true
+  }
+
+  try {
+    const response = await recipeService.getFeed(currentUserId.value, {
+      page: currentPage.value,
+      size: PAGE_SIZE,
+      category: activeFilter.value !== 'All' ? activeFilter.value : undefined,
+    })
+
+    const page = response.data
+    const newRecipes = page.content || []
+
+    feedRecipes.value = reset ? newRecipes : [...feedRecipes.value, ...newRecipes]
+    hasMoreRecipes.value = !page.last
+    currentPage.value += 1
+  } catch (error) {
+    console.error('Error loading feed:', error)
+    if (currentPage.value === 0) {
+      errorMessage.value = 'Could not load recipes right now.'
+    }
+  } finally {
+    loading.value = false
+    loadingMore.value = false
+  }
+}
+
+function loadMoreRecipes() {
+  if (!loadingMore.value && hasMoreRecipes.value && !loading.value) {
+    loadFeedPage()
+  }
+}
+
+function changeFilter(item) {
+  activeFilter.value = item
+}
+
+watch(activeFilter, () => {
+  loadFeedPage(true)
+})
+
+function setupObserver() {
+  observer = new IntersectionObserver(
+    (entries) => {
+      if (entries[0].isIntersecting) {
+        loadMoreRecipes()
+      }
+    },
+    { rootMargin: '200px' }
+  )
+
+  if (scrollSentinel.value) {
+    observer.observe(scrollSentinel.value)
+  }
+}
+
 async function loadData() {
   loading.value = true
   errorMessage.value = ''
@@ -285,34 +315,46 @@ async function loadData() {
   try {
     await authStore.initialize()
 
-    const [recipesResponse, usersResponse, likesResponse, followsResponse, achievementsResponse] =
-      await Promise.all([
-        recipeService.getAll(),
-        userService.getAll(),
-        likeService.getByUserId(currentUserId.value),
-        currentUserId.value ? followService.getFollowing(currentUserId.value) : Promise.resolve({ data: [] }),
-        achievementService.getAll(),
-      ])
+    const [usersResponse, likesResponse, achievementsResponse] = await Promise.all([
+      userService.getAll(),
+      currentUserId.value ? likeService.getByUserId(currentUserId.value) : Promise.resolve({ data: [] }),
+      achievementService.getAll(),
+    ])
 
-    recipes.value = recipesResponse.data || []
     users.value = usersResponse.data || []
     likes.value = likesResponse.data || []
-    follows.value = followsResponse.data || []
     achievements.value = achievementsResponse.data || []
 
     if (currentUserId.value) {
       const userAchievementsResponse = await userAchievementService.getByUserId(currentUserId.value)
       userAchievements.value = userAchievementsResponse.data || []
-    } else {
-      userAchievements.value = []
     }
+
+    await loadFeedPage(true)
   } catch (error) {
     console.error('Error loading home data:', error)
     errorMessage.value = 'Could not load recipes right now.'
-  } finally {
     loading.value = false
   }
 }
 
-onMounted(loadData)
+async function loadUserRecipeCount() {
+  if (!currentUserId.value) return
+  try {
+    const response = await recipeService.countByUser(currentUserId.value)
+    userRecipeCountRef.value = Number(response.data) || 0
+  } catch {
+    userRecipeCountRef.value = 0
+  }
+}
+
+onMounted(async () => {
+  await loadData()
+  await loadUserRecipeCount()
+  setupObserver()
+})
+
+onUnmounted(() => {
+  if (observer) observer.disconnect()
+})
 </script>
