@@ -1,0 +1,30 @@
+services:
+  - type: web
+    name: plateup-backend
+    runtime: docker
+    plan: free
+    dockerfilePath: ./plateup/Dockerfile
+    dockerContext: ./plateup
+    envVars:
+      - key: SPRING_DATASOURCE_URL
+        sync: false
+      - key: SPRING_DATASOURCE_USERNAME
+        sync: false
+      - key: SPRING_DATASOURCE_PASSWORD
+        sync: false
+      - key: APP_JWT_SECRET
+        generateValue: true
+      - key: APP_UPLOAD_DIR
+        value: /app/uploads
+      - key: SPRING_JPA_HIBERNATE_DDL_AUTO
+        value: none
+
+  - type: web
+    name: plateup-frontend
+    runtime: static
+    rootDir: Vue/plateup-frontend
+    buildCommand: npm ci && npm run build
+    staticPublishPath: dist
+    envVars:
+      - key: VITE_API_URL
+        sync: false
