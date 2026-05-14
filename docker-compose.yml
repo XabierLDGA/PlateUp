@@ -7,7 +7,7 @@ services:
       MYSQL_DATABASE: plateup
     volumes:
       - mysql_data:/var/lib/mysql
-      - "./scripts sql/Pruebas.sql:/docker-entrypoint-initdb.d/init.sql"
+      - "./db/Pruebas.sql:/docker-entrypoint-initdb.d/init.sql"
     healthcheck:
       test: ["CMD", "mysql", "-uroot", "-p${DB_PASSWORD:-plateup123}", "-e", "SELECT 1 FROM information_schema.schemata WHERE schema_name='plateup'"]
       interval: 10s
