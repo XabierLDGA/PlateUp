@@ -36,4 +36,10 @@ public interface RecipeRepository extends JpaRepository<Recipe, Long> {
            "AND r.category = :category " +
            "ORDER BY r.createdAt DESC, r.id DESC")
     Page<Recipe> findFeedForUserAndCategory(@Param("userId") Long userId, @Param("category") String category, Pageable pageable);
+
+    @Query("SELECT r.category, COUNT(r) FROM Recipe r GROUP BY r.category ORDER BY COUNT(r) DESC")
+    List<Object[]> countByCategory();
+
+    @Query("SELECT r.userId, COUNT(r) FROM Recipe r GROUP BY r.userId ORDER BY COUNT(r) DESC")
+    List<Object[]> countByUserGrouped(Pageable pageable);
 }

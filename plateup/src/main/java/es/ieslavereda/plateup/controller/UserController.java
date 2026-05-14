@@ -290,6 +290,29 @@ public class UserController {
         return ResponseEntity.ok(savedUser);
     }
 
+    @PutMapping("/{id}/role")
+    public ResponseEntity<?> updateRole(@PathVariable Long id, @RequestBody Map<String, String> body) {
+        User authenticatedUser = getAuthenticatedUser();
+        if (!"ADMIN".equals(authenticatedUser.getRole())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(error("Admin access required."));
+        }
+
+        Optional<User> target = repository.findById(id);
+        if (target.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        String newRole = body.get("role");
+        if (!"USER".equals(newRole) && !"ADMIN".equals(newRole)) {
+            return ResponseEntity.badRequest().body(error("Role must be USER or ADMIN."));
+        }
+
+        User user = target.get();
+        user.setRole(newRole);
+        user.setUpdatedAt(LocalDateTime.now());
+        return ResponseEntity.ok(repository.save(user));
+    }
+
     @DeleteMapping("/{id}")
     @Transactional
     public ResponseEntity<?> delete(@PathVariable Long id) {

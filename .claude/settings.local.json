@@ -16,7 +16,8 @@
       "Bash(magick --version)",
       "Bash(convert --version)",
       "Bash(python *)",
-      "Bash(pip install *)"
+      "Bash(pip install *)",
+      "Bash(npm install *)"
     ]
   }
 }

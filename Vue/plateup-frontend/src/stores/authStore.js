@@ -31,6 +31,7 @@ export const useAuthStore = defineStore('auth', {
         .slice(0, 2)
         .toUpperCase()
     },
+    isAdmin: (state) => state.currentUser?.role === 'ADMIN',
   },
 
   actions: {

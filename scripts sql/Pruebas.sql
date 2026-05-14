@@ -22,7 +22,8 @@ CREATE TABLE Users (
     streak_count INT DEFAULT 0,
     last_active_date DATE NULL,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    role VARCHAR(10) NOT NULL DEFAULT 'USER'
 );
 
 -- ===========================================
@@ -529,6 +530,8 @@ VALUES
 -- ===========================================
 -- SOCIAL
 -- ===========================================
+UPDATE Users SET role = 'ADMIN' WHERE username = 'camaron';
+
 INSERT INTO Follows (follower_id, followed_id)
 VALUES
 (1,2),(3,1),(3,2),(4,1),(5,2),(6,3),(7,1),(8,4),(9,5),(10,6);

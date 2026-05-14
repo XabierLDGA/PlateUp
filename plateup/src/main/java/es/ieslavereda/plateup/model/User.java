@@ -44,6 +44,9 @@ public class User {
     @Column(name = "last_active_date")
     private LocalDate lastActiveDate;
 
+    @Column(name = "role")
+    private String role = "USER";
+
     public Long getId() {
         return id;
     }
@@ -138,5 +141,13 @@ public class User {
 
     public void setLastActiveDate(LocalDate lastActiveDate) {
         this.lastActiveDate = lastActiveDate;
+    }
+
+    public String getRole() {
+        return role;
+    }
+
+    public void setRole(String role) {
+        this.role = role;
     }
 }

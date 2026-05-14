@@ -11,6 +11,7 @@ import RecipeDetailView from '../views/RecipeDetailView.vue'
 import UserProfileView from '../views/UserProfileView.vue'
 import ConnectionsView from '../views/ConnectionsView.vue'
 import CookingView from '../views/CookingView.vue'
+import AdminDashboardView from '../views/AdminDashboardView.vue'
 
 const routes = [
   {
@@ -73,6 +74,12 @@ const routes = [
     component: CookingView,
     props: true,
   },
+  {
+    path: '/admin',
+    name: 'admin',
+    component: AdminDashboardView,
+    meta: { adminOnly: true },
+  },
 ]
 
 const router = createRouter({
@@ -98,6 +105,10 @@ router.beforeEach(async (to) => {
 
   if (!authStore.isAuthenticated) {
     return { name: 'login' }
+  }
+
+  if (to.meta.adminOnly && !authStore.isAdmin) {
+    return { name: 'home' }
   }
 
   return true

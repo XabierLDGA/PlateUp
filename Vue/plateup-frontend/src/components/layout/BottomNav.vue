@@ -18,14 +18,22 @@
 <script setup>
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
-import { House, Search, SquarePen, User } from 'lucide-vue-next'
+import { House, Search, SquarePen, User, LayoutDashboard } from 'lucide-vue-next'
+import { useAuthStore } from '../../stores/authStore'
 
 const route = useRoute()
+const authStore = useAuthStore()
 
-const navItems = computed(() => [
-  { name: 'home', label: 'Home', to: '/home', icon: House },
-  { name: 'explore', label: 'Explore', to: '/explore', icon: Search },
-  { name: 'create', label: 'Create', to: '/create', icon: SquarePen },
-  { name: 'profile', label: 'Profile', to: '/profile', icon: User },
-])
+const navItems = computed(() => {
+  const items = [
+    { name: 'home', label: 'Home', to: '/home', icon: House },
+    { name: 'explore', label: 'Explore', to: '/explore', icon: Search },
+    { name: 'create', label: 'Create', to: '/create', icon: SquarePen },
+    { name: 'profile', label: 'Profile', to: '/profile', icon: User },
+  ]
+  if (authStore.isAdmin) {
+    items.push({ name: 'admin', label: 'Admin', to: '/admin', icon: LayoutDashboard })
+  }
+  return items
+})
 </script>

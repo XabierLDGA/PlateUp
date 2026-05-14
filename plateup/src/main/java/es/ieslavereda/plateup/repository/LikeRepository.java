@@ -20,4 +20,7 @@ public interface LikeRepository extends JpaRepository<Like, LikeId> {
 
     @Query("SELECT l.recipeId, COUNT(l) FROM Like l WHERE l.recipeId IN :recipeIds GROUP BY l.recipeId")
     List<Object[]> countGroupByRecipeId(@Param("recipeIds") Collection<Long> recipeIds);
+
+    @Query("SELECT l.recipeId, COUNT(l) FROM Like l GROUP BY l.recipeId ORDER BY COUNT(l) DESC")
+    List<Object[]> topRecipesByLikes(org.springframework.data.domain.Pageable pageable);
 }
