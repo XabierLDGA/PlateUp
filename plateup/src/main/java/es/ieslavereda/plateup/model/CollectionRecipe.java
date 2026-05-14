@@ -3,7 +3,7 @@ package es.ieslavereda.plateup.model;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "collectionrecipes")
+@Table(name = "CollectionRecipes")
 @IdClass(CollectionRecipeId.class)
 public class CollectionRecipe {
 

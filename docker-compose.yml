@@ -1,0 +1,44 @@
+services:
+  db:
+    image: mysql:8.0
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-plateup123}
+      MYSQL_DATABASE: plateup
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - "./scripts sql/Pruebas.sql:/docker-entrypoint-initdb.d/init.sql"
+    healthcheck:
+      test: ["CMD", "mysql", "-uroot", "-p${DB_PASSWORD:-plateup123}", "-e", "SELECT 1 FROM information_schema.schemata WHERE schema_name='plateup'"]
+      interval: 10s
+      timeout: 5s
+      retries: 15
+      start_period: 60s
+
+  backend:
+    build: ./plateup
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/plateup?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Europe/Madrid&characterEncoding=UTF-8&useUnicode=true
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD:-plateup123}
+      APP_JWT_SECRET: ${JWT_SECRET:-plateup-super-secret-key-change-this-in-production}
+      APP_UPLOAD_DIR: /app/uploads
+    volumes:
+      - uploads_data:/app/uploads
+    restart: on-failure
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+
+  frontend:
+    build: ./Vue/plateup-frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+
+volumes:
+  mysql_data:
+  uploads_data:
