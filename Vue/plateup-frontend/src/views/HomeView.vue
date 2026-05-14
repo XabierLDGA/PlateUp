@@ -67,7 +67,7 @@
     <section class="space-y-4">
       <div class="flex items-center justify-between">
         <h2 class="text-xl font-bold text-gray-900">Fresh from the kitchen</h2>
-        <span class="text-sm font-medium text-[#f45b3f]">{{ feedRecipes.length }} recipes</span>
+        <span class="text-sm font-medium text-[#f45b3f]">{{ totalFeedCount }} recipes</span>
       </div>
 
       <div
@@ -152,6 +152,7 @@ const userAchievements = ref([])
 const likeLoadingRecipeId = ref(null)
 const currentPage = ref(0)
 const hasMoreRecipes = ref(true)
+const totalFeedCount = ref(0)
 const scrollSentinel = ref(null)
 let observer = null
 
@@ -244,6 +245,7 @@ async function loadFeedPage(reset = false) {
     currentPage.value = 0
     hasMoreRecipes.value = true
     feedRecipes.value = []
+    totalFeedCount.value = 0
   }
 
   if (!hasMoreRecipes.value) return
@@ -267,6 +269,7 @@ async function loadFeedPage(reset = false) {
 
     feedRecipes.value = reset ? newRecipes : [...feedRecipes.value, ...newRecipes]
     hasMoreRecipes.value = !page.last
+    totalFeedCount.value = page.totalElements ?? totalFeedCount.value
     currentPage.value += 1
   } catch (error) {
     console.error('Error loading feed:', error)
