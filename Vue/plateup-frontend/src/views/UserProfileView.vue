@@ -151,7 +151,14 @@
         <h2 class="text-xl font-bold text-gray-900">Achievements</h2>
 
         <div
-          v-if="earnedAchievements.length === 0"
+          v-if="!canViewRecipeBook"
+          class="rounded-[28px] bg-white p-6 text-center text-gray-500 shadow-sm ring-1 ring-black/5"
+        >
+          Follow this user to see their achievements.
+        </div>
+
+        <div
+          v-else-if="earnedAchievements.length === 0"
           class="rounded-[28px] bg-white p-6 text-center text-gray-500 shadow-sm ring-1 ring-black/5"
         >
           This user has no achievements yet.
