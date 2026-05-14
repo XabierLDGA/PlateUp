@@ -24,6 +24,12 @@ public class IngredientController {
         return repository.findAll();
     }
 
+    // 🔹 GET ingredientes de una receta específica
+    @GetMapping("/recipe/{recipeId}")
+    public List<Ingredient> getByRecipeId(@PathVariable Long recipeId) {
+        return repository.findByRecipeId(recipeId);
+    }
+
     // 🔹 GET ingrediente por ID
     @GetMapping("/{id}")
     public Optional<Ingredient> getById(@PathVariable Long id) {

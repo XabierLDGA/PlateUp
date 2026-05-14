@@ -219,7 +219,7 @@ const likes = ref([])
 const ingredients = ref([])
 const recipeIngredients = ref([])
 const recipeSteps = ref([])
-const follows = ref([])
+const currentUserFollowsAuthor = ref(false)
 const checkedIngredients = ref([])
 const followLoading = ref(false)
 const likeLoading = ref(false)
@@ -257,12 +257,7 @@ const isOwnRecipe = computed(() => {
 
 const isFollowingAuthor = computed(() => {
   if (!currentUserId.value || !authorId.value || isOwnRecipe.value) return false
-
-  return follows.value.some(
-    (follow) =>
-      Number(follow.followerId) === currentUserId.value &&
-      Number(follow.followedId) === authorId.value
-  )
+  return currentUserFollowsAuthor.value
 })
 
 const ingredientChecklist = computed(() => {
@@ -360,24 +355,13 @@ async function toggleFollowAuthor() {
   try {
     if (isFollowingAuthor.value) {
       await followService.remove(currentUserId.value, authorId.value)
-
-      follows.value = follows.value.filter(
-        (follow) =>
-          !(
-            Number(follow.followerId) === currentUserId.value &&
-            Number(follow.followedId) === authorId.value
-          )
-      )
+      currentUserFollowsAuthor.value = false
     } else {
       await followService.create({
         followerId: currentUserId.value,
         followedId: authorId.value,
       })
-
-      follows.value.push({
-        followerId: currentUserId.value,
-        followedId: authorId.value,
-      })
+      currentUserFollowsAuthor.value = true
     }
   } catch (error) {
     console.error('Error toggling follow in RecipeDetailView:', error)
@@ -405,11 +389,13 @@ async function loadRecipeDetail() {
 
     const results = await Promise.allSettled([
       userService.getById(recipe.value.userId),
-      likeService.getAll(),
-      ingredientService.getAll(),
+      likeService.getByRecipeId(recipeId),
+      ingredientService.getByRecipeId(recipeId),
       recipeIngredientService.getByRecipeId(recipeId),
       recipeStepService.getByRecipeId(recipeId),
-      followService.getAll(),
+      currentUserId.value
+        ? followService.getById(currentUserId.value, recipe.value.userId)
+        : Promise.resolve({ data: null }),
     ])
 
     const [
@@ -426,7 +412,8 @@ async function loadRecipeDetail() {
     ingredients.value = ingredientsResponse.status === 'fulfilled' ? ingredientsResponse.value.data || [] : []
     recipeIngredients.value = recipeIngredientsResponse.status === 'fulfilled' ? recipeIngredientsResponse.value.data || [] : []
     recipeSteps.value = stepsResponse.status === 'fulfilled' ? stepsResponse.value.data || [] : []
-    follows.value = followsResponse.status === 'fulfilled' ? followsResponse.value.data || [] : []
+    const followData = followsResponse.status === 'fulfilled' ? followsResponse.value?.data : null
+    currentUserFollowsAuthor.value = followData != null && followData.status === 'accepted'
     checkedIngredients.value = []
 
     results.forEach((result, index) => {

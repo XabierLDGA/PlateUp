@@ -3,7 +3,6 @@ package es.ieslavereda.plateup.controller;
 import es.ieslavereda.plateup.exception.AuthenticationRequiredException;
 import es.ieslavereda.plateup.model.Like;
 import es.ieslavereda.plateup.model.LikeId;
-import es.ieslavereda.plateup.model.Recipe;
 import es.ieslavereda.plateup.model.User;
 import es.ieslavereda.plateup.repository.LikeRepository;
 import es.ieslavereda.plateup.repository.RecipeRepository;
@@ -46,6 +45,16 @@ public class LikeController {
         return repository.findAll();
     }
 
+    @GetMapping("/recipe/{recipeId}")
+    public List<Like> getByRecipeId(@PathVariable Long recipeId) {
+        return repository.findByRecipeId(recipeId);
+    }
+
+    @GetMapping("/user/{userId}")
+    public List<Like> getByUserId(@PathVariable Long userId) {
+        return repository.findByUserId(userId);
+    }
+
     @GetMapping("/{userId}/{recipeId}")
     public Optional<Like> getById(@PathVariable Long userId, @PathVariable Long recipeId) {
         return repository.findById(new LikeId(userId, recipeId));
@@ -63,8 +72,7 @@ public class LikeController {
 
         Like savedLike = repository.save(like);
 
-        recipeRepository.findById(savedLike.getRecipeId())
-                .map(Recipe::getUserId)
+        recipeRepository.findUserIdById(savedLike.getRecipeId())
                 .ifPresent(achievementUnlockService::checkLikeAchievements);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(savedLike);

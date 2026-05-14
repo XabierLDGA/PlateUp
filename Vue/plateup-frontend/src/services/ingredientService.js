@@ -5,6 +5,10 @@ export default {
     return api.get('/ingredients')
   },
 
+  getByRecipeId(recipeId) {
+    return api.get(`/ingredients/recipe/${recipeId}`)
+  },
+
   getById(id) {
     return api.get(`/ingredients/${id}`)
   },

@@ -52,6 +52,11 @@ public class FollowController {
         return repository.findByFollowedIdAndStatus(userId, "pending");
     }
 
+    @GetMapping("/following/{userId}")
+    public List<Follow> getFollowingByUser(@PathVariable Long userId) {
+        return repository.findByFollowerIdAndStatus(userId, "accepted");
+    }
+
     @PostMapping
     public ResponseEntity<?> create(@RequestBody Follow follow) {
         User authenticatedUser = getAuthenticatedUser();

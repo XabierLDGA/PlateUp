@@ -5,6 +5,14 @@ export default {
     return api.get('/likes')
   },
 
+  getByRecipeId(recipeId) {
+    return api.get(`/likes/recipe/${recipeId}`)
+  },
+
+  getByUserId(userId) {
+    return api.get(`/likes/user/${userId}`)
+  },
+
   getById(userId, recipeId) {
     return api.get(`/likes/${userId}/${recipeId}`)
   },

@@ -141,11 +141,7 @@ const currentUserId = computed(() => Number(authStore.currentUser?.id || 0))
 const currentUserAvatar = computed(() => getUserAvatar(authStore.currentUser))
 
 const followedUserIds = computed(() => {
-  if (!currentUserId.value) return []
-
-  return follows.value
-    .filter((follow) => Number(follow.followerId) === currentUserId.value && follow.status === 'accepted')
-    .map((follow) => Number(follow.followedId))
+  return follows.value.map((follow) => Number(follow.followedId))
 })
 
 function getRecipeTimestamp(recipe) {
@@ -293,8 +289,8 @@ async function loadData() {
       await Promise.all([
         recipeService.getAll(),
         userService.getAll(),
-        likeService.getAll(),
-        followService.getAll(),
+        likeService.getByUserId(currentUserId.value),
+        currentUserId.value ? followService.getFollowing(currentUserId.value) : Promise.resolve({ data: [] }),
         achievementService.getAll(),
       ])
 
