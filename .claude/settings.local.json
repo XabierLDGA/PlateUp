@@ -19,7 +19,11 @@
       "Bash(pip install *)",
       "Bash(npm install *)",
       "Bash(docker --version)",
-      "Bash(docker compose *)"
+      "Bash(docker compose *)",
+      "Bash(git mv *)",
+      "Bash(git rm *)",
+      "Bash(mysql *)",
+      "Bash(docker run *)"
     ]
   }
 }

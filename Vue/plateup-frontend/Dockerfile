@@ -4,7 +4,8 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm ci
 COPY . .
-RUN VITE_API_URL=/api npm run build
+ARG VITE_API_URL=/api
+RUN VITE_API_URL=${VITE_API_URL} npm run build
 
 # Runtime
 FROM nginx:alpine
