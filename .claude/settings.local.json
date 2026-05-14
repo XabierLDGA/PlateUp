@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\Administrador\\\\Desktop\\\\PlateUp\")",
+      "Bash(Select-Object Name, LastWriteTime)",
+      "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\Administrador\\\\Desktop\\\\PlateUp\" -Recurse -Name)",
+      "Bash(Select-Object -First 50)",
+      "Bash(./mvnw compile *)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git push *)",
+      "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\Administrador\\\\Desktop\\\\PlateUp\" -Recurse -Directory)",
+      "Bash(Select-Object -First 20)",
+      "Bash(npx @capacitor/assets --version)",
+      "Bash(npm list *)",
+      "Bash(magick --version)",
+      "Bash(convert --version)",
+      "Bash(python *)",
+      "Bash(pip install *)"
+    ]
+  }
+}
