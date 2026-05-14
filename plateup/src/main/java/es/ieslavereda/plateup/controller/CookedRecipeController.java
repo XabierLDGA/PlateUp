@@ -1,5 +1,6 @@
 package es.ieslavereda.plateup.controller;
 
+import es.ieslavereda.plateup.exception.AuthenticationRequiredException;
 import es.ieslavereda.plateup.model.CookedRecipe;
 import es.ieslavereda.plateup.model.User;
 import es.ieslavereda.plateup.repository.CookedRecipeRepository;
@@ -95,10 +96,10 @@ public class CookedRecipeController {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         if (authentication == null || authentication.getName() == null) {
-            throw new RuntimeException("Authenticated user not found");
+            throw new AuthenticationRequiredException("Authenticated user not found");
         }
 
         return userRepository.findByUsername(authentication.getName())
-                .orElseThrow(() -> new RuntimeException("Authenticated user not found"));
+                .orElseThrow(() -> new AuthenticationRequiredException("Authenticated user not found"));
     }
 }

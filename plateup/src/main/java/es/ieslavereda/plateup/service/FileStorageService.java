@@ -9,9 +9,13 @@ import java.io.IOException;
 import java.nio.file.*;
 import java.util.Set;
 import java.util.UUID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Service
 public class FileStorageService {
+
+    private static final Logger log = LoggerFactory.getLogger(FileStorageService.class);
 
     private static final Set<String> ALLOWED_CONTENT_TYPES = Set.of(
             "image/jpeg",
@@ -57,7 +61,8 @@ public class FileStorageService {
             }
 
             Files.deleteIfExists(target);
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            log.warn("Failed to delete file {}: {}", publicPath, e.getMessage());
         }
     }
 

@@ -1,5 +1,7 @@
 package es.ieslavereda.plateup.controller;
 
+import es.ieslavereda.plateup.exception.AuthenticationRequiredException;
+import es.ieslavereda.plateup.exception.ResourceNotFoundException;
 import es.ieslavereda.plateup.model.Recipe;
 import es.ieslavereda.plateup.model.User;
 import es.ieslavereda.plateup.repository.RecipeRepository;
@@ -76,7 +78,7 @@ public class RecipeController {
     @PutMapping("/{id}")
     public ResponseEntity<?> update(@PathVariable Long id, @RequestBody Recipe recipe) {
         Recipe existing = repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Recipe not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Recipe not found"));
 
         User authenticatedUser = getAuthenticatedUser();
         if (!existing.getUserId().equals(authenticatedUser.getId())) {
@@ -106,7 +108,7 @@ public class RecipeController {
     @DeleteMapping("/{id}")
     public ResponseEntity<?> delete(@PathVariable Long id) {
         Recipe existing = repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Recipe not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Recipe not found"));
 
         User authenticatedUser = getAuthenticatedUser();
         if (!existing.getUserId().equals(authenticatedUser.getId())) {
@@ -126,10 +128,10 @@ public class RecipeController {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         if (authentication == null || authentication.getName() == null) {
-            throw new RuntimeException("Authenticated user not found");
+            throw new AuthenticationRequiredException("Authenticated user not found");
         }
 
         return userRepository.findByUsername(authentication.getName())
-                .orElseThrow(() -> new RuntimeException("Authenticated user not found"));
+                .orElseThrow(() -> new AuthenticationRequiredException("Authenticated user not found"));
     }
 }

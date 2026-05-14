@@ -1,5 +1,6 @@
 package es.ieslavereda.plateup.controller;
 
+import es.ieslavereda.plateup.exception.AuthenticationRequiredException;
 import es.ieslavereda.plateup.dto.AuthResponse;
 import es.ieslavereda.plateup.dto.LoginRequest;
 import es.ieslavereda.plateup.dto.RegisterRequest;
@@ -356,11 +357,11 @@ public class UserController {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         if (authentication == null || authentication.getName() == null) {
-            throw new RuntimeException("Authenticated user not found");
+            throw new AuthenticationRequiredException("Authenticated user not found");
         }
 
         return repository.findByUsername(authentication.getName())
-                .orElseThrow(() -> new RuntimeException("Authenticated user not found"));
+                .orElseThrow(() -> new AuthenticationRequiredException("Authenticated user not found"));
     }
 
     private boolean matchesPasswordAndMigrateLegacy(User user, String rawPassword) {
