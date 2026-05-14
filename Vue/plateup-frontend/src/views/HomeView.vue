@@ -147,6 +147,7 @@ const errorMessage = ref('')
 const feedRecipes = ref([])
 const users = ref([])
 const likes = ref([])
+const likeCounts = ref({})
 const achievements = ref([])
 const userAchievements = ref([])
 const likeLoadingRecipeId = ref(null)
@@ -194,7 +195,7 @@ function getAuthorByUserId(userId) {
 }
 
 function getLikesCount(recipeId) {
-  return likes.value.filter((like) => Number(like.recipeId) === Number(recipeId)).length
+  return Number(likeCounts.value[Number(recipeId)] ?? 0)
 }
 
 function isRecipeLikedByCurrentUser(recipeId) {
@@ -219,10 +220,12 @@ async function toggleRecipeLike(recipe) {
         (like) =>
           !(Number(like.userId) === currentUserId.value && Number(like.recipeId) === recipeId)
       )
+      likeCounts.value[recipeId] = Math.max(0, (Number(likeCounts.value[recipeId]) || 0) - 1)
     } else {
       const payload = { userId: currentUserId.value, recipeId }
       const response = await likeService.create(payload)
       likes.value.push(response.data || payload)
+      likeCounts.value[recipeId] = (Number(likeCounts.value[recipeId]) || 0) + 1
 
       const refreshedAchievements = await userAchievementService.getByUserId(currentUserId.value)
       userAchievements.value = refreshedAchievements.data || []
@@ -246,6 +249,7 @@ async function loadFeedPage(reset = false) {
     hasMoreRecipes.value = true
     feedRecipes.value = []
     totalFeedCount.value = 0
+    likeCounts.value = {}
   }
 
   if (!hasMoreRecipes.value) return
@@ -270,6 +274,12 @@ async function loadFeedPage(reset = false) {
     feedRecipes.value = reset ? newRecipes : [...feedRecipes.value, ...newRecipes]
     hasMoreRecipes.value = !page.last
     totalFeedCount.value = page.totalElements ?? totalFeedCount.value
+
+    const newIds = newRecipes.map((r) => Number(r.id)).filter(Boolean)
+    if (newIds.length > 0) {
+      const countsResponse = await likeService.getCounts(newIds)
+      Object.assign(likeCounts.value, countsResponse.data || {})
+    }
     currentPage.value += 1
   } catch (error) {
     console.error('Error loading feed:', error)

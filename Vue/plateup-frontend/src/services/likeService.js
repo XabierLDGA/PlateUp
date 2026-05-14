@@ -13,6 +13,11 @@ export default {
     return api.get(`/likes/user/${userId}`)
   },
 
+  getCounts(recipeIds) {
+    if (!recipeIds || recipeIds.length === 0) return Promise.resolve({ data: {} })
+    return api.get('/likes/counts', { params: { recipeIds } })
+  },
+
   getById(userId, recipeId) {
     return api.get(`/likes/${userId}/${recipeId}`)
   },

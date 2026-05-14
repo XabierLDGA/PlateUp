@@ -17,4 +17,7 @@ public interface LikeRepository extends JpaRepository<Like, LikeId> {
 
     @Query(value = "SELECT COUNT(*) FROM Likes l INNER JOIN Recipes r ON r.id = l.recipe_id WHERE r.user_id = :userId", nativeQuery = true)
     long countLikesReceivedByUserId(@Param("userId") Long userId);
+
+    @Query("SELECT l.recipeId, COUNT(l) FROM Like l WHERE l.recipeId IN :recipeIds GROUP BY l.recipeId")
+    List<Object[]> countGroupByRecipeId(@Param("recipeIds") Collection<Long> recipeIds);
 }

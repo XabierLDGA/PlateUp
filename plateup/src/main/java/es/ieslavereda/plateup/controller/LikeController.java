@@ -16,7 +16,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/likes")
@@ -53,6 +55,16 @@ public class LikeController {
     @GetMapping("/user/{userId}")
     public List<Like> getByUserId(@PathVariable Long userId) {
         return repository.findByUserId(userId);
+    }
+
+    @GetMapping("/counts")
+    public Map<Long, Long> getCounts(@RequestParam List<Long> recipeIds) {
+        if (recipeIds == null || recipeIds.isEmpty()) return Map.of();
+        return repository.countGroupByRecipeId(recipeIds).stream()
+                .collect(Collectors.toMap(
+                        row -> (Long) row[0],
+                        row -> (Long) row[1]
+                ));
     }
 
     @GetMapping("/{userId}/{recipeId}")
