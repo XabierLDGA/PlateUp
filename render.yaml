@@ -18,9 +18,8 @@ services:
       - key: SPRING_JPA_HIBERNATE_DDL_AUTO
         value: none
 
-  - type: web
+  - type: static
     name: plateup-frontend
-    env: static
     rootDir: Vue/plateup-frontend
     buildCommand: npm ci && npm run build
     staticPublishPath: dist
