@@ -2,7 +2,6 @@ services:
   - type: web
     name: plateup-backend
     env: docker
-    plan: free
     dockerfilePath: ./plateup/Dockerfile
     dockerContext: ./plateup
     envVars:
@@ -22,7 +21,6 @@ services:
   - type: web
     name: plateup-frontend
     env: static
-    plan: free
     rootDir: Vue/plateup-frontend
     buildCommand: npm ci && npm run build
     staticPublishPath: dist
