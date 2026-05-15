@@ -23,7 +23,8 @@
       "Bash(git mv *)",
       "Bash(git rm *)",
       "Bash(mysql *)",
-      "Bash(docker run *)"
+      "Bash(docker run *)",
+      "Bash(git status *)"
     ]
   }
 }
