@@ -3,7 +3,7 @@ package es.ieslavereda.plateup.controller;
 import es.ieslavereda.plateup.exception.AuthenticationRequiredException;
 import es.ieslavereda.plateup.model.Recipe;
 import es.ieslavereda.plateup.model.User;
-import es.ieslavereda.plateup.repository.CommentRepository;
+import es.ieslavereda.plateup.repository.CookedRecipeRepository;
 import es.ieslavereda.plateup.repository.LikeRepository;
 import es.ieslavereda.plateup.repository.RecipeRepository;
 import es.ieslavereda.plateup.repository.UserRepository;
@@ -26,18 +26,18 @@ public class AdminController {
     private final UserRepository userRepository;
     private final RecipeRepository recipeRepository;
     private final LikeRepository likeRepository;
-    private final CommentRepository commentRepository;
+    private final CookedRecipeRepository cookedRecipeRepository;
 
     public AdminController(
             UserRepository userRepository,
             RecipeRepository recipeRepository,
             LikeRepository likeRepository,
-            CommentRepository commentRepository
+            CookedRecipeRepository cookedRecipeRepository
     ) {
         this.userRepository = userRepository;
         this.recipeRepository = recipeRepository;
         this.likeRepository = likeRepository;
-        this.commentRepository = commentRepository;
+        this.cookedRecipeRepository = cookedRecipeRepository;
     }
 
     @GetMapping("/stats")
@@ -47,7 +47,7 @@ public class AdminController {
         stats.put("totalUsers", userRepository.count());
         stats.put("totalRecipes", recipeRepository.count());
         stats.put("totalLikes", likeRepository.count());
-        stats.put("totalComments", commentRepository.count());
+        stats.put("totalCooked", cookedRecipeRepository.count());
         return ResponseEntity.ok(stats);
     }
 

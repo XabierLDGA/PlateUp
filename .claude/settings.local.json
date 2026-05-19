@@ -40,7 +40,8 @@
       "PowerShell(Get-ChildItem -Path \"C:\\\\Users\\\\Administrador\\\\Desktop\\\\PlateUp\\\\Vue\\\\plateup-frontend\\\\src\" -Recurse -Depth 1 | Where-Object { $_.PSIsContainer } | ForEach-Object { $_.Name })",
       "Bash(npm run *)",
       "Bash(npx cap *)",
-      "Bash(./gradlew assembleDebug)"
+      "Bash(./gradlew assembleDebug)",
+      "Bash(xargs grep -l \"comment\")"
     ]
   }
 }
