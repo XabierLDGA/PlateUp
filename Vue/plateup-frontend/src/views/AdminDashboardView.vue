@@ -13,19 +13,19 @@
       <!-- KPI Cards -->
       <section class="grid grid-cols-2 gap-3">
         <div class="rounded-3xl bg-white p-4 shadow-sm ring-1 ring-black/5">
-          <p class="text-xs font-medium text-gray-500">Usuarios</p>
+          <p class="text-xs font-medium text-gray-500">Usuarios totales</p>
           <p class="mt-1 text-3xl font-bold text-gray-900">{{ stats.totalUsers ?? 0 }}</p>
         </div>
         <div class="rounded-3xl bg-white p-4 shadow-sm ring-1 ring-black/5">
-          <p class="text-xs font-medium text-gray-500">Recetas</p>
+          <p class="text-xs font-medium text-gray-500">Recetas totales</p>
           <p class="mt-1 text-3xl font-bold text-gray-900">{{ stats.totalRecipes ?? 0 }}</p>
         </div>
         <div class="rounded-3xl bg-white p-4 shadow-sm ring-1 ring-black/5">
-          <p class="text-xs font-medium text-gray-500">Me gusta</p>
+          <p class="text-xs font-medium text-gray-500">Likes totales</p>
           <p class="mt-1 text-3xl font-bold text-[#f45b3f]">{{ stats.totalLikes ?? 0 }}</p>
         </div>
         <div class="rounded-3xl bg-white p-4 shadow-sm ring-1 ring-black/5">
-          <p class="text-xs font-medium text-gray-500">Veces cocinado</p>
+          <p class="text-xs font-medium text-gray-500">Recetas cocinadas totales</p>
           <p class="mt-1 text-3xl font-bold text-gray-900">{{ stats.totalCooked ?? 0 }}</p>
         </div>
       </section>
