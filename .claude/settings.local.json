@@ -25,7 +25,13 @@
       "Bash(mysql *)",
       "Bash(docker run *)",
       "Bash(git status *)",
-      "Bash(Test-Path *)"
+      "Bash(Test-Path *)",
+      "Bash(mysqldump --host=plateup-mysql-plateup.h.aivencloud.com --port=18612 --user=avnadmin --password=AVNS__eHD0Vm-F0wEZ96WRTN --ssl-mode=REQUIRED defaultdb)",
+      "Bash(echo \"Exit: $?\")",
+      "Bash(command -v mysql mysqldump)",
+      "PowerShell(Get-Command *)",
+      "Bash(winget install *)",
+      "Bash(export PATH=\"$PATH:/c/Program Files/MySQL/MySQL Server 8.4/bin\")"
     ]
   }
 }
