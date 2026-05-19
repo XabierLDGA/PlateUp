@@ -11,7 +11,5 @@ RUN VITE_API_URL=${VITE_API_URL} npm run build
 FROM nginx:alpine
 COPY --from=build /app/dist /usr/share/nginx/html
 COPY nginx.conf /etc/nginx/conf.d/default.conf
-COPY docker-entrypoint.sh /docker-entrypoint.sh
-RUN chmod +x /docker-entrypoint.sh
 EXPOSE 80
-CMD ["/docker-entrypoint.sh"]
+CMD ["/bin/sh", "-c", "sed -i \"s/NGINX_PORT/${PORT:-80}/g\" /etc/nginx/conf.d/default.conf && nginx -g 'daemon off;'"]
