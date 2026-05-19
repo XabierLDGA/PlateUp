@@ -31,7 +31,16 @@
       "Bash(command -v mysql mysqldump)",
       "PowerShell(Get-Command *)",
       "Bash(winget install *)",
-      "Bash(export PATH=\"$PATH:/c/Program Files/MySQL/MySQL Server 8.4/bin\")"
+      "Bash(export PATH=\"$PATH:/c/Program Files/MySQL/MySQL Server 8.4/bin\")",
+      "Bash(curl *)",
+      "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\Administrador\\\\Desktop\\\\PlateUp\\\\Vue\\\\plateup-frontend\" -Force)",
+      "Bash(Select-Object Name, PSIsContainer)",
+      "PowerShell(head *)",
+      "PowerShell(Get-ChildItem -Path \"C:\\\\Users\\\\Administrador\\\\Desktop\\\\PlateUp\\\\Vue\\\\plateup-frontend\\\\android\" -Recurse -Depth 3 | Where-Object { -not $_.PSIsContainer -or $_.Name -in @\\('android', 'app', 'src', 'main', 'java', 'kotlin'\\) } | ForEach-Object { $_.FullName -replace [regex]::Escape\\(\"C:\\\\Users\\\\Administrador\\\\Desktop\\\\PlateUp\\\\Vue\\\\plateup-frontend\\\\android\"\\), \".\" })",
+      "PowerShell(Get-ChildItem -Path \"C:\\\\Users\\\\Administrador\\\\Desktop\\\\PlateUp\\\\Vue\\\\plateup-frontend\\\\src\" -Recurse -Depth 1 | Where-Object { $_.PSIsContainer } | ForEach-Object { $_.Name })",
+      "Bash(npm run *)",
+      "Bash(npx cap *)",
+      "Bash(./gradlew assembleDebug)"
     ]
   }
 }

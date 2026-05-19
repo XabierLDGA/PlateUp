@@ -3,7 +3,7 @@
   "appName": "PlateUp",
   "webDir": "dist",
   "server": {
-    "androidScheme": "http"
+    "androidScheme": "https"
   },
   "backgroundColor": "#ffffff"
 }
