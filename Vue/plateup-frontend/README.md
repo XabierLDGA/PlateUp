@@ -1,5 +1,40 @@
-# Vue 3 + Vite
+# PlateUp — Frontend
 
-This template should help get you started developing with Vue 3 in Vite. The template uses Vue 3 `<script setup>` SFCs, check out the [script setup docs](https://v3.vuejs.org/api/sfc-script-setup.html#sfc-script-setup) to learn more.
+Frontend de PlateUp desarrollado con **Vue 3 + Vite**. Incluye versión web y móvil (Android) mediante Capacitor.
 
-Learn more about IDE Support for Vue in the [Vue Docs Scaling up Guide](https://vuejs.org/guide/scaling-up/tooling.html#ide-support).
+## Stack
+
+- Vue 3 (Composition API)
+- Vite
+- Pinia (estado global)
+- Vue Router
+- Capacitor (build Android)
+- Nginx (producción)
+
+## Desarrollo local
+
+```bash
+npm install
+npm run dev
+```
+
+La app conecta con el backend en `http://localhost:8080/api` por defecto (configurable en `.env`).
+
+## Build producción
+
+```bash
+npm run build
+```
+
+## Build Android
+
+```bash
+npx cap sync android
+npx cap open android
+```
+
+## Variables de entorno
+
+| Variable | Descripción |
+|---|---|
+| `VITE_API_URL` | URL base de la API del backend |

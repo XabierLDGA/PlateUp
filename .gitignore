@@ -1,1 +1,15 @@
+# Variables de entorno
 .env
+
+# Archivos de sistema Windows
+desktop.ini
+Thumbs.db
+
+# Claude Code (configuración local)
+.claude/
+
+# Archivos temporales de editores
+*.tmp
+*.bak
+~$*
+.~lock.*#
