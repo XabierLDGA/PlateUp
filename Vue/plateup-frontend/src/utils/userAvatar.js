@@ -1,5 +1,6 @@
 import { resolveMediaUrl } from './media'
 
+// Obtiene las iniciales del usuario a partir de su nombre o, si no tiene, de su username
 function getInitials(user) {
   const source =
     user?.displayName?.trim() ||
@@ -14,6 +15,7 @@ function getInitials(user) {
     .toUpperCase()
 }
 
+// Genera un avatar SVG circular con las iniciales del usuario cuando no tiene foto de perfil
 function buildAvatarFallback(user) {
   const initials = getInitials(user)
 
@@ -35,9 +37,12 @@ function buildAvatarFallback(user) {
     </svg>
   `.trim()
 
+  // Codificamos el SVG como Data URL para poder usarlo directamente en un atributo src
   return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`
 }
 
+// Devuelve la URL del avatar de un usuario.
+// Si tiene foto de perfil la resuelve; si no, genera un avatar con sus iniciales.
 export function getUserAvatar(user) {
   if (user?.avatarUrl && user.avatarUrl.trim() !== '') {
     return resolveMediaUrl(user.avatarUrl)

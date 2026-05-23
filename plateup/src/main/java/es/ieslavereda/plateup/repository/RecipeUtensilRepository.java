@@ -11,6 +11,7 @@ import java.util.Collection;
 
 public interface RecipeUtensilRepository extends JpaRepository<RecipeUtensil, RecipeUtensilId> {
 
+    // Elimina los utensilios asociados a una lista de recetas, necesario antes de borrar las recetas
     @Modifying
     @Transactional
     @Query("DELETE FROM RecipeUtensil ru WHERE ru.recipe_id IN :recipeIds")

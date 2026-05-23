@@ -4,11 +4,13 @@ import jakarta.persistence.*;
 import java.io.Serializable;
 import java.util.Objects;
 
+// Relaciona una receta con los utensilios de cocina necesarios para prepararla
 @Entity
 @Table(name = "RecipeUtensils")
 @IdClass(RecipeUtensilId.class)
 public class RecipeUtensil {
 
+    // Clave compuesta: una receta puede necesitar varios utensilios y un utensilio puede usarse en varias recetas
     @Id
     private Long recipe_id;
 

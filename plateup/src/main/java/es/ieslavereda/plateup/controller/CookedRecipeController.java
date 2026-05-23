@@ -35,11 +35,13 @@ public class CookedRecipeController {
         this.userRepository = userRepository;
     }
 
+    // Devuelve todas las recetas que un usuario ha marcado como cocinadas
     @GetMapping("/user/{userId}")
     public List<CookedRecipe> getByUser(@PathVariable Long userId) {
         return repository.findByUserId(userId);
     }
 
+    // Devuelve la entrada concreta de una receta cocinada por un usuario
     @GetMapping("/user/{userId}/recipe/{recipeId}")
     public ResponseEntity<CookedRecipe> getEntry(
             @PathVariable Long userId,
@@ -50,11 +52,13 @@ public class CookedRecipeController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    // Registra que el usuario ha cocinado una receta; si ya existía, actualiza la fecha y el tiempo empleado
     @PostMapping
     public ResponseEntity<?> save(@RequestBody CookedRecipe payload) {
         User authenticatedUser = getAuthenticatedUser();
         Long authenticatedUserId = authenticatedUser.getId();
 
+        // Si ya hay un registro previo se actualiza; si no, se crea uno nuevo
         CookedRecipe savedCookedRecipe = repository.findByUserIdAndRecipeId(authenticatedUserId, payload.getRecipeId())
                 .map(existing -> {
                     existing.setCookedAt(LocalDateTime.now());
@@ -71,6 +75,7 @@ public class CookedRecipeController {
         return ResponseEntity.status(HttpStatus.CREATED).body(savedCookedRecipe);
     }
 
+    // Elimina el registro de una receta cocinada; solo lo puede hacer el propio usuario
     @DeleteMapping("/user/{userId}/recipe/{recipeId}")
     @Transactional
     public ResponseEntity<?> delete(
@@ -92,6 +97,7 @@ public class CookedRecipeController {
         return ResponseEntity.noContent().build();
     }
 
+    // Obtiene el usuario autenticado a partir del contexto de seguridad de Spring
     private User getAuthenticatedUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 

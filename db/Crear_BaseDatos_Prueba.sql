@@ -3,6 +3,7 @@
 -- Script corregido y consistente con backend/frontend
 -- ===========================================
 
+-- Recreamos la base de datos desde cero con soporte completo para emojis y caracteres especiales
 DROP DATABASE IF EXISTS plateup;
 CREATE DATABASE plateup CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE plateup;
@@ -10,6 +11,8 @@ USE plateup;
 -- ===========================================
 -- USERS
 -- ===========================================
+-- Tabla de usuarios: almacena el perfil y credenciales de cada cuenta registrada
+-- La visibilidad controla quién puede ver el perfil (privado, solo seguidores, o público)
 CREATE TABLE Users (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     username VARCHAR(50) NOT NULL UNIQUE,
@@ -43,6 +46,7 @@ CREATE TABLE Recipes (
 -- ===========================================
 -- RECIPE STEPS
 -- ===========================================
+-- Pasos de la receta ordenados por order_index; pueden incluir un temporizador y una imagen de apoyo
 CREATE TABLE RecipeSteps (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     recipe_id BIGINT NOT NULL,
@@ -174,6 +178,7 @@ CREATE TABLE CollectionRecipes (
 -- ===========================================
 -- ACHIEVEMENTS
 -- ===========================================
+-- Logros desbloqueables que se otorgan al cumplir ciertos hitos dentro de la app
 CREATE TABLE Achievements (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
@@ -272,6 +277,7 @@ CREATE TABLE AuditLogs (
 -- ===========================================
 -- ÍNDICES
 -- ===========================================
+-- Índices para acelerar las consultas más frecuentes de la aplicación
 CREATE INDEX idx_recipe_user ON Recipes(user_id);
 CREATE INDEX idx_step_recipe ON RecipeSteps(recipe_id);
 CREATE INDEX idx_recipeingredient_recipe ON RecipeIngredients(recipe_id);

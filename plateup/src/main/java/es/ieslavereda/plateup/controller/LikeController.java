@@ -42,21 +42,25 @@ public class LikeController {
         this.userRepository = userRepository;
     }
 
+    // Devuelve todos los likes de la aplicación
     @GetMapping
     public List<Like> getAll() {
         return repository.findAll();
     }
 
+    // Devuelve todos los likes de una receta concreta
     @GetMapping("/recipe/{recipeId}")
     public List<Like> getByRecipeId(@PathVariable Long recipeId) {
         return repository.findByRecipeId(recipeId);
     }
 
+    // Devuelve todos los likes que ha dado un usuario
     @GetMapping("/user/{userId}")
     public List<Like> getByUserId(@PathVariable Long userId) {
         return repository.findByUserId(userId);
     }
 
+    // Devuelve el número de likes agrupado por receta para una lista de IDs
     @GetMapping("/counts")
     public Map<Long, Long> getCounts(@RequestParam List<Long> recipeIds) {
         if (recipeIds == null || recipeIds.isEmpty()) return Map.of();
@@ -67,11 +71,13 @@ public class LikeController {
                 ));
     }
 
+    // Comprueba si un usuario concreto ha dado like a una receta concreta
     @GetMapping("/{userId}/{recipeId}")
     public Optional<Like> getById(@PathVariable Long userId, @PathVariable Long recipeId) {
         return repository.findById(new LikeId(userId, recipeId));
     }
 
+    // Registra un like del usuario autenticado y comprueba si el autor de la receta desbloquea algún logro
     @PostMapping
     public ResponseEntity<?> create(@RequestBody Like like) {
         User authenticatedUser = getAuthenticatedUser();
@@ -84,12 +90,14 @@ public class LikeController {
 
         Like savedLike = repository.save(like);
 
+        // Buscamos al autor de la receta para comprobarle los logros de likes recibidos
         recipeRepository.findUserIdById(savedLike.getRecipeId())
                 .ifPresent(achievementUnlockService::checkLikeAchievements);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(savedLike);
     }
 
+    // Elimina un like; solo lo puede quitar el usuario que lo dio
     @DeleteMapping("/{userId}/{recipeId}")
     public ResponseEntity<?> delete(@PathVariable Long userId, @PathVariable Long recipeId) {
         User authenticatedUser = getAuthenticatedUser();
@@ -103,6 +111,7 @@ public class LikeController {
         return ResponseEntity.ok().build();
     }
 
+    // Obtiene el usuario autenticado a partir del contexto de seguridad de Spring
     private User getAuthenticatedUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 

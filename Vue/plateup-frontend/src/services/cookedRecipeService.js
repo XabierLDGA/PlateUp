@@ -1,23 +1,23 @@
 import api from './api'
 
 export default {
-  /** Fetch all cooked entries for a user */
+  // Obtiene todas las recetas que ha cocinado un usuario concreto
   getByUserId(userId) {
     return api.get(`/cooked/user/${userId}`)
   },
 
-  /** Check if a specific recipe has been cooked by a user */
+  // Comprueba si un usuario ya ha cocinado una receta específica
   getEntry(userId, recipeId) {
     return api.get(`/cooked/user/${userId}/recipe/${recipeId}`)
   },
 
-  /** Save (or update) a cooked entry after finishing cooking */
+  // Guarda o actualiza el registro de una receta cocinada, incluyendo el tiempo empleado
   save(payload) {
     // payload: { userId, recipeId, elapsedSeconds }
     return api.post('/cooked', payload)
   },
 
-  /** Remove a cooked entry */
+  // Elimina el registro de una receta cocinada por un usuario
   remove(userId, recipeId) {
     return api.delete(`/cooked/user/${userId}/recipe/${recipeId}`)
   },

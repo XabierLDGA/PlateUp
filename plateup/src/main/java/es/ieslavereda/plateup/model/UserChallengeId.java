@@ -3,6 +3,8 @@ package es.ieslavereda.plateup.model;
 import java.io.Serializable;
 import java.util.Objects;
 
+// Clase auxiliar que representa la clave primaria compuesta de UserChallenge
+// JPA la necesita para identificar de forma única la participación de cada usuario en un reto
 public class UserChallengeId implements Serializable {
     private Long user_id;
     private Long challenge_id;
@@ -13,6 +15,7 @@ public class UserChallengeId implements Serializable {
         this.challenge_id = challenge_id;
     }
 
+    // equals y hashCode son obligatorios en las claves compuestas para que JPA pueda compararlas correctamente
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

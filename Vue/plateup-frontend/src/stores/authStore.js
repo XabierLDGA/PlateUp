@@ -2,8 +2,10 @@ import { defineStore } from 'pinia'
 import userService from '../services/userService'
 import { getStoredToken, setAuthToken } from '../services/api'
 
+// Clave con la que se guarda el usuario actual en el localStorage
 const STORAGE_KEY = 'plateup_current_user'
 
+// Normaliza el objeto de usuario recibido del backend para tener un formato consistente
 function normalizeUser(user) {
   if (!user) return null
 
@@ -13,6 +15,7 @@ function normalizeUser(user) {
 }
 
 export const useAuthStore = defineStore('auth', {
+  // Estado global de autenticación: usuario, token y flags de carga
   state: () => ({
     currentUser: null,
     authToken: null,
@@ -22,6 +25,7 @@ export const useAuthStore = defineStore('auth', {
   }),
 
   getters: {
+    // Extrae las iniciales del nombre del usuario para mostrarlas en el avatar
     userInitials: (state) => {
       if (!state.currentUser?.displayName) return 'PU'
       return state.currentUser.displayName
@@ -31,10 +35,12 @@ export const useAuthStore = defineStore('auth', {
         .slice(0, 2)
         .toUpperCase()
     },
+    // Comprueba si el usuario actual tiene rol de administrador
     isAdmin: (state) => state.currentUser?.role === 'ADMIN',
   },
 
   actions: {
+    // Actualiza el usuario de la sesión y lo persiste en el localStorage
     setSessionUser(user) {
       const normalizedUser = normalizeUser(user)
       this.currentUser = normalizedUser
@@ -48,21 +54,25 @@ export const useAuthStore = defineStore('auth', {
       }
     },
 
+    // Actualiza el token JWT de la sesión y lo aplica a las cabeceras de la API
     setSessionToken(token) {
       this.authToken = token || null
       setAuthToken(this.authToken)
       this.isAuthenticated = Boolean(this.currentUser?.id && this.authToken)
     },
 
+    // Inicializa el store una sola vez; si ya está inicializado no hace nada
     async initialize() {
       if (this.initialized) return
       await this.loadFromStorage()
     },
 
+    // Restaura la sesión del usuario a partir de los datos guardados en el localStorage
     async loadFromStorage() {
       const rawUser = localStorage.getItem(STORAGE_KEY)
       const storedToken = getStoredToken()
 
+      // Si falta el usuario o el token guardados, cerramos la sesión por seguridad
       if (!rawUser || !storedToken) {
         this.logout()
         this.initialized = true
@@ -80,6 +90,7 @@ export const useAuthStore = defineStore('auth', {
 
         this.setSessionToken(storedToken)
 
+        // Verificamos que el usuario sigue existiendo en el servidor antes de restaurar la sesión
         const response = await userService.getById(parsedUser.id)
         const freshUser = response.data || null
 
@@ -89,6 +100,7 @@ export const useAuthStore = defineStore('auth', {
           return
         }
 
+        // Aprovechamos la restauración de sesión para registrar el acceso diario
         const checkinResponse = await userService.dailyCheckin(freshUser.id)
         this.setSessionUser(checkinResponse.data)
       } catch (error) {
@@ -98,6 +110,7 @@ export const useAuthStore = defineStore('auth', {
       }
     },
 
+    // Inicia sesión con las credenciales del usuario, guarda el token y registra el acceso diario
     async login(credentials) {
       this.loading = true
 
@@ -121,6 +134,7 @@ export const useAuthStore = defineStore('auth', {
       }
     },
 
+    // Registra un nuevo usuario, inicia su sesión automáticamente y registra el acceso diario
     async register(payload) {
       this.loading = true
 
@@ -144,6 +158,7 @@ export const useAuthStore = defineStore('auth', {
       }
     },
 
+    // Recarga los datos del usuario actual desde el servidor para tenerlos actualizados
     async refreshCurrentUser() {
       if (!this.currentUser?.id || !this.authToken) return null
 
@@ -159,6 +174,7 @@ export const useAuthStore = defineStore('auth', {
       return freshUser
     },
 
+    // Cierra la sesión del usuario, limpia el estado y elimina los datos del localStorage
     logout() {
       this.currentUser = null
       this.authToken = null

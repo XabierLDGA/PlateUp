@@ -170,32 +170,42 @@ const route = useRoute()
 const router = useRouter()
 const authStore = useAuthStore()
 
+// Estado de carga, errores y datos del perfil visitado
 const loading = ref(true)
 const errorMessage = ref('')
 const profileUser = ref(null)
 const users = ref([])
 const follows = ref([])
+
+// IDs en proceso de seguimiento o eliminación, para bloquear doble clic
 const togglingUserId = ref(null)
 const removingFollowerId = ref(null)
+
+// Pestaña activa: 'followers' o 'following'
 const activeTab = ref('followers')
 
+// IDs numéricos del usuario visitado y del usuario actual
 const numericUserId = computed(() => Number(props.id))
 const currentUserId = computed(() => Number(authStore.currentUser?.id || 0))
 
+// Cuenta cuántos seguidores tiene el usuario visitado
 const followersCount = computed(() => {
   if (!numericUserId.value) return 0
   return follows.value.filter((item) => Number(item.followedId) === numericUserId.value).length
 })
 
+// Cuenta a cuántos usuarios sigue el usuario visitado
 const followingCount = computed(() => {
   if (!numericUserId.value) return 0
   return follows.value.filter((item) => Number(item.followerId) === numericUserId.value).length
 })
 
+// Indica si el usuario está viendo su propia lista de conexiones
 const isOwnConnectionsView = computed(() => {
   return numericUserId.value === currentUserId.value
 })
 
+// Lista de usuarios a mostrar según la pestaña activa (seguidores o seguidos)
 const visibleUsers = computed(() => {
   if (!numericUserId.value) return []
 
@@ -215,6 +225,7 @@ const visibleUsers = computed(() => {
     .filter(Boolean)
 })
 
+// Mensaje a mostrar cuando la lista de la pestaña activa está vacía
 const emptyMessage = computed(() => {
   if (activeTab.value === 'followers') {
     return 'This user has no followers yet.'
@@ -223,10 +234,12 @@ const emptyMessage = computed(() => {
   return 'This user is not following anyone yet.'
 })
 
+// Sincroniza la pestaña activa con el parámetro 'tab' de la URL
 function syncTabFromQuery() {
   activeTab.value = route.query.tab === 'following' ? 'following' : 'followers'
 }
 
+// Cambia la pestaña activa y actualiza la URL sin recargar la página
 function setActiveTab(tab) {
   router.replace({
     name: 'connections',
@@ -239,10 +252,12 @@ function getAvatar(user) {
   return getUserAvatar(user)
 }
 
+// Comprueba si un usuario de la lista es el usuario logueado
 function isCurrentUser(userId) {
   return Number(userId) === currentUserId.value
 }
 
+// Comprueba si el usuario logueado sigue a otro usuario
 function isFollowingUser(userId) {
   if (!currentUserId.value || !userId) return false
 
@@ -253,6 +268,7 @@ function isFollowingUser(userId) {
   )
 }
 
+// Muestra el botón de eliminar seguidor solo en la pestaña propia de seguidores
 function showRemoveFollowerButton(userId) {
   return (
     activeTab.value === 'followers' &&
@@ -261,6 +277,7 @@ function showRemoveFollowerButton(userId) {
   )
 }
 
+// Navega hacia atrás al perfil correspondiente según si es propio o ajeno
 function goBack() {
   if (numericUserId.value === currentUserId.value) {
     router.push({ name: 'profile' })
@@ -273,6 +290,7 @@ function goBack() {
   })
 }
 
+// Navega al perfil de un usuario de la lista
 function goToUserProfile(userId) {
   if (Number(userId) === currentUserId.value) {
     router.push({ name: 'profile' })
@@ -285,6 +303,7 @@ function goToUserProfile(userId) {
   })
 }
 
+// Alterna el seguimiento de un usuario: si ya lo sigue lo deja de seguir, si no lo sigue
 async function toggleFollow(userId) {
   const targetUserId = Number(userId)
 
@@ -323,6 +342,7 @@ async function toggleFollow(userId) {
   }
 }
 
+// Elimina a un seguidor de la propia lista (solo disponible en la vista propia)
 async function removeFollower(userId) {
   const followerUserId = Number(userId)
 
@@ -354,6 +374,7 @@ async function removeFollower(userId) {
   }
 }
 
+// Carga el perfil del usuario y todas sus conexiones desde la API
 async function loadConnections() {
   loading.value = true
   errorMessage.value = ''
@@ -396,6 +417,7 @@ onMounted(async () => {
   await loadConnections()
 })
 
+// Actualiza la pestaña activa cuando cambia el parámetro tab en la URL
 watch(
   () => route.query.tab,
   () => {
@@ -403,6 +425,7 @@ watch(
   }
 )
 
+// Recarga las conexiones cuando se navega a otro usuario
 watch(
   () => props.id,
   async () => {

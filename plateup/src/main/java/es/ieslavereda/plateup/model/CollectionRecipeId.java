@@ -3,6 +3,8 @@ package es.ieslavereda.plateup.model;
 import java.io.Serializable;
 import java.util.Objects;
 
+// Clase auxiliar que representa la clave primaria compuesta de CollectionRecipe
+// JPA la necesita para identificar de forma única cada fila de la tabla intermedia
 public class CollectionRecipeId implements Serializable {
     private Long collection_id;
     private Long recipe_id;
@@ -14,6 +16,7 @@ public class CollectionRecipeId implements Serializable {
         this.recipe_id = recipe_id;
     }
 
+    // equals y hashCode son obligatorios en las claves compuestas para que JPA pueda compararlas correctamente
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

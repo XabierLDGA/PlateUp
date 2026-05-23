@@ -36,16 +36,19 @@ public class CollectionRecipeController {
         this.userRepository = userRepository;
     }
 
+    // Devuelve todas las entradas de recetas en colecciones
     @GetMapping
     public List<CollectionRecipe> getAll() {
         return repository.findAll();
     }
 
+    // Devuelve una entrada concreta por la clave compuesta de colección y receta
     @GetMapping("/{collectionId}/{recipeId}")
     public Optional<CollectionRecipe> getById(@PathVariable Long collectionId, @PathVariable Long recipeId) {
         return repository.findById(new CollectionRecipeId(collectionId, recipeId));
     }
 
+    // Añade una receta a una colección; solo el dueño de la colección puede hacerlo
     @PostMapping
     public ResponseEntity<?> create(@RequestBody CollectionRecipe collectionRecipe) {
         Optional<Collection> collectionOptional = collectionRepository.findById(collectionRecipe.getCollection_id());
@@ -66,6 +69,7 @@ public class CollectionRecipeController {
         return ResponseEntity.status(HttpStatus.CREATED).body(saved);
     }
 
+    // Actualiza la entrada de una receta dentro de una colección; solo lo puede hacer el dueño
     @PutMapping("/{collectionId}/{recipeId}")
     public ResponseEntity<?> update(
             @PathVariable Long collectionId,
@@ -98,6 +102,7 @@ public class CollectionRecipeController {
         return ResponseEntity.ok(updated);
     }
 
+    // Elimina una receta de una colección; solo lo puede hacer el dueño de la colección
     @DeleteMapping("/{collectionId}/{recipeId}")
     public ResponseEntity<?> delete(@PathVariable Long collectionId, @PathVariable Long recipeId) {
         Optional<CollectionRecipe> existingOptional = repository.findById(new CollectionRecipeId(collectionId, recipeId));
@@ -123,6 +128,7 @@ public class CollectionRecipeController {
         return ResponseEntity.ok().build();
     }
 
+    // Obtiene el usuario autenticado a partir del contexto de seguridad de Spring
     private User getAuthenticatedUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 

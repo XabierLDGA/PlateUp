@@ -29,21 +29,25 @@ public class CommentController {
         this.userRepository = userRepository;
     }
 
+    // Devuelve todos los comentarios de la aplicación
     @GetMapping
     public List<Comment> getAll() {
         return repository.findAll();
     }
 
+    // Devuelve un comentario concreto por su identificador
     @GetMapping("/{id}")
     public Optional<Comment> getById(@PathVariable Long id) {
         return repository.findById(id);
     }
 
+    // Devuelve todos los comentarios de una receta concreta
     @GetMapping("/recipe/{recipeId}")
     public List<Comment> getByRecipeId(@PathVariable Long recipeId) {
         return repository.findByRecipeId(recipeId);
     }
 
+    // Crea un comentario nuevo asociado al usuario autenticado
     @PostMapping
     public ResponseEntity<?> create(@Valid @RequestBody Comment comment) {
         User authenticatedUser = getAuthenticatedUser();
@@ -58,6 +62,7 @@ public class CommentController {
         return ResponseEntity.status(HttpStatus.CREATED).body(savedComment);
     }
 
+    // Actualiza el contenido de un comentario; solo lo puede hacer su autor
     @PutMapping("/{id}")
     public ResponseEntity<?> update(@PathVariable Long id, @Valid @RequestBody Comment comment) {
         Optional<Comment> existingOptional = repository.findById(id);
@@ -85,6 +90,7 @@ public class CommentController {
         return ResponseEntity.ok(updatedComment);
     }
 
+    // Elimina un comentario; solo lo puede borrar su autor
     @DeleteMapping("/{id}")
     public ResponseEntity<?> delete(@PathVariable Long id) {
         Optional<Comment> existingOptional = repository.findById(id);
@@ -105,6 +111,7 @@ public class CommentController {
         return ResponseEntity.ok().build();
     }
 
+    // Obtiene el usuario autenticado a partir del contexto de seguridad de Spring
     private User getAuthenticatedUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 

@@ -141,15 +141,22 @@ const PAGE_SIZE = 10
 const router = useRouter()
 const authStore = useAuthStore()
 
+// Estado de carga del feed: primera carga y paginación
 const loading = ref(true)
 const loadingMore = ref(false)
 const errorMessage = ref('')
+
+// Recetas del feed y datos auxiliares de usuarios y likes
 const feedRecipes = ref([])
 const users = ref([])
 const likes = ref([])
 const likeCounts = ref({})
+
+// Logros del usuario para mostrar en el banner de estadísticas
 const achievements = ref([])
 const userAchievements = ref([])
+
+// Control de paginación y scroll infinito
 const likeLoadingRecipeId = ref(null)
 const currentPage = ref(0)
 const hasMoreRecipes = ref(true)
@@ -157,16 +164,20 @@ const totalFeedCount = ref(0)
 const scrollSentinel = ref(null)
 let observer = null
 
+// Filtros de categoría disponibles para el feed
 const filters = ['All', ...RECIPE_CATEGORIES]
 const activeFilter = ref('All')
 
+// ID y avatar del usuario logueado
 const currentUserId = computed(() => Number(authStore.currentUser?.id || 0))
 const currentUserAvatar = computed(() => getUserAvatar(authStore.currentUser))
 
 const userRecipeCountRef = ref(0)
 
+// Número de recetas publicadas por el usuario
 const userRecipeCount = computed(() => userRecipeCountRef.value)
 
+// Número de logros conseguidos por el usuario
 const achievementsCount = computed(() => {
   if (!currentUserId.value) return 0
   return userAchievements.value.filter(
@@ -174,6 +185,7 @@ const achievementsCount = computed(() => {
   ).length
 })
 
+// Suma total de puntos de los logros del usuario
 const totalAchievementPoints = computed(() => {
   if (!currentUserId.value) return 0
   return userAchievements.value
@@ -186,18 +198,22 @@ const totalAchievementPoints = computed(() => {
     }, 0)
 })
 
+// Días de racha de cocina del usuario actual
 const streakDays = computed(() => {
   return Number(authStore.currentUser?.streakCount || 0)
 })
 
+// Devuelve el usuario autor de una receta por su ID
 function getAuthorByUserId(userId) {
   return users.value.find((user) => Number(user.id) === Number(userId)) || null
 }
 
+// Devuelve el número de likes de una receta usando el mapa de contadores
 function getLikesCount(recipeId) {
   return Number(likeCounts.value[Number(recipeId)] ?? 0)
 }
 
+// Comprueba si el usuario logueado ha dado like a una receta
 function isRecipeLikedByCurrentUser(recipeId) {
   if (!currentUserId.value) return false
   return likes.value.some(
@@ -207,6 +223,7 @@ function isRecipeLikedByCurrentUser(recipeId) {
   )
 }
 
+// Da o quita el like a una receta y actualiza los logros si es necesario
 async function toggleRecipeLike(recipe) {
   const recipeId = Number(recipe?.id)
   if (!currentUserId.value || !recipeId || likeLoadingRecipeId.value === recipeId) return
@@ -227,6 +244,7 @@ async function toggleRecipeLike(recipe) {
       likes.value.push(response.data || payload)
       likeCounts.value[recipeId] = (Number(likeCounts.value[recipeId]) || 0) + 1
 
+      // Refrescamos los logros por si se ha desbloqueado alguno al dar like
       const refreshedAchievements = await userAchievementService.getByUserId(currentUserId.value)
       userAchievements.value = refreshedAchievements.data || []
     }
@@ -237,10 +255,12 @@ async function toggleRecipeLike(recipe) {
   }
 }
 
+// Navega al perfil del usuario logueado
 function goToCurrentUserProfile() {
   router.push({ name: 'profile' })
 }
 
+// Carga una página del feed, opcionalmente reseteando la paginación
 async function loadFeedPage(reset = false) {
   if (!currentUserId.value) return
 
@@ -292,20 +312,24 @@ async function loadFeedPage(reset = false) {
   }
 }
 
+// Carga la siguiente página del feed si no está ya cargando
 function loadMoreRecipes() {
   if (!loadingMore.value && hasMoreRecipes.value && !loading.value) {
     loadFeedPage()
   }
 }
 
+// Actualiza el filtro activo de categoría
 function changeFilter(item) {
   activeFilter.value = item
 }
 
+// Recarga el feed desde el principio cuando cambia el filtro de categoría
 watch(activeFilter, () => {
   loadFeedPage(true)
 })
 
+// Configura el IntersectionObserver para cargar más recetas al llegar al final del listado
 function setupObserver() {
   observer = new IntersectionObserver(
     (entries) => {
@@ -321,6 +345,7 @@ function setupObserver() {
   }
 }
 
+// Carga los datos iniciales: usuarios, likes del usuario y logros
 async function loadData() {
   loading.value = true
   errorMessage.value = ''
@@ -351,6 +376,7 @@ async function loadData() {
   }
 }
 
+// Obtiene el número de recetas publicadas por el usuario para el banner de estadísticas
 async function loadUserRecipeCount() {
   if (!currentUserId.value) return
   try {
@@ -367,6 +393,7 @@ onMounted(async () => {
   setupObserver()
 })
 
+// Desconecta el observer del scroll infinito al desmontar el componente
 onUnmounted(() => {
   if (observer) observer.disconnect()
 })

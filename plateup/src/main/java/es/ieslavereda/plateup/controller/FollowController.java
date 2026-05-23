@@ -37,31 +37,37 @@ public class FollowController {
         this.userRepository = userRepository;
     }
 
+    // Devuelve todas las relaciones de seguimiento existentes
     @GetMapping
     public List<Follow> getAll() {
         return repository.findAll();
     }
 
+    // Devuelve una relación de seguimiento concreta por la clave compuesta de seguidor y seguido
     @GetMapping("/{followerId}/{followedId}")
     public Optional<Follow> getById(@PathVariable Long followerId, @PathVariable Long followedId) {
         return repository.findById(new FollowId(followerId, followedId));
     }
 
+    // Devuelve las solicitudes de seguimiento pendientes que tiene un usuario
     @GetMapping("/requests/{userId}")
     public List<Follow> getPendingRequestsForUser(@PathVariable Long userId) {
         return repository.findByFollowedIdAndStatus(userId, "pending");
     }
 
+    // Devuelve los usuarios a los que sigue un usuario concreto
     @GetMapping("/following/{userId}")
     public List<Follow> getFollowingByUser(@PathVariable Long userId) {
         return repository.findByFollowerIdAndStatus(userId, "accepted");
     }
 
+    // Devuelve los seguidores aceptados de un usuario
     @GetMapping("/followers/{userId}")
     public List<Follow> getFollowersByUser(@PathVariable Long userId) {
         return repository.findByFollowedIdAndStatus(userId, "accepted");
     }
 
+    // Crea una nueva relación de seguimiento desde el usuario autenticado
     @PostMapping
     public ResponseEntity<?> create(@RequestBody Follow follow) {
         User authenticatedUser = getAuthenticatedUser();
@@ -76,6 +82,7 @@ public class FollowController {
             follow.setCreatedAt(LocalDateTime.now());
         }
 
+        // Por defecto el seguimiento se acepta directamente; si el perfil es privado, el frontend envía "pending"
         if (follow.getStatus() == null || follow.getStatus().isBlank()) {
             follow.setStatus("accepted");
         } else {
@@ -84,6 +91,7 @@ public class FollowController {
 
         Follow savedFollow = repository.save(follow);
 
+        // Solo comprobamos logros de seguidores si el follow ha quedado aceptado
         if ("accepted".equals(savedFollow.getStatus())) {
             achievementUnlockService.checkFollowerAchievements(savedFollow.getFollowedId());
         }
@@ -91,6 +99,7 @@ public class FollowController {
         return ResponseEntity.status(HttpStatus.CREATED).body(savedFollow);
     }
 
+    // Actualiza el estado de una relación de seguimiento; pueden hacerlo tanto el seguidor como el seguido
     @PutMapping("/{followerId}/{followedId}")
     public ResponseEntity<?> update(
             @PathVariable Long followerId,
@@ -128,6 +137,7 @@ public class FollowController {
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
+    // Acepta una solicitud de seguimiento pendiente; solo lo puede hacer el usuario al que van dirigida
     @PostMapping("/{followerId}/{followedId}/accept")
     public ResponseEntity<?> acceptRequest(@PathVariable Long followerId, @PathVariable Long followedId) {
         FollowId id = new FollowId(followerId, followedId);
@@ -150,6 +160,7 @@ public class FollowController {
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
+    // Elimina una relación de seguimiento; la puede borrar tanto el seguidor como el seguido
     @DeleteMapping("/{followerId}/{followedId}")
     public ResponseEntity<?> delete(@PathVariable Long followerId, @PathVariable Long followedId) {
         FollowId id = new FollowId(followerId, followedId);
@@ -169,6 +180,7 @@ public class FollowController {
         return ResponseEntity.ok(Map.of("message", "Follow deleted."));
     }
 
+    // Obtiene el usuario autenticado a partir del contexto de seguridad de Spring
     private User getAuthenticatedUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 

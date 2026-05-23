@@ -10,6 +10,7 @@ USE plateup;
 -- LIMPIAR TABLAS (opcional pero recomendable)
 -- ===========================================
 
+-- Desactivamos temporalmente las restricciones para poder hacer TRUNCATE sin problemas de orden
 SET FOREIGN_KEY_CHECKS = 0;
 
 TRUNCATE TABLE AuditLogs;
@@ -33,12 +34,13 @@ TRUNCATE TABLE RecipeSteps;
 TRUNCATE TABLE Recipes;
 TRUNCATE TABLE Users;
 
+-- Volvemos a activar las restricciones antes de insertar los datos
 SET FOREIGN_KEY_CHECKS = 1;
 
 -- ===========================================
 -- USERS
 -- ===========================================
-
+-- Usuarios de prueba con perfiles variados para simular una comunidad activa
 INSERT INTO Users (username, email, password_hash, display_name, bio, avatar_url, visibility_default)
 VALUES
 ('camaron','camaron@example.com','camaron','Camarón Mantis','Soy un camarón mantis.','https://media.istockphoto.com/id/2192691445/es/foto/odontodactylus-scyllarus.jpg?s=612x612&w=0&k=20&c=Taq6oFbSVoMMeaBY5EqgCtWWDrSw04pyegDLvCJcKNE=','public'),
@@ -56,7 +58,7 @@ VALUES
 -- ===========================================
 -- RECIPES
 -- ===========================================
-
+-- Recetas de ejemplo con distintas dificultades y tiempos de preparación
 INSERT INTO Recipes (user_id, title, description, image_url, servings, total_minutes, difficulty)
 VALUES
 (1, 'Pasta al pesto', 'Receta clásica italiana con albahaca y piñones.', 'https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=1200&q=80', 2, 25, 'easy'),
@@ -263,7 +265,7 @@ VALUES
 -- ===========================================
 -- SOCIAL
 -- ===========================================
-
+-- Relaciones sociales de prueba: follows, likes y comentarios entre usuarios
 INSERT INTO Follows (follower_id, followed_id)
 VALUES
 (1,2),(3,1),(3,2),(4,1),(5,2),(6,3),(7,1),(8,4),(9,5),(10,6);
@@ -289,7 +291,7 @@ VALUES
 -- ===========================================
 -- ACHIEVEMENTS
 -- ===========================================
-
+-- Logros base del sistema de gamificación de PlateUp
 INSERT INTO Achievements (name, description, icon_url, category, points)
 VALUES
 ('Nuevo chef','Publica tu primera receta','https://picsum.photos/50?ach1','publicación',50),

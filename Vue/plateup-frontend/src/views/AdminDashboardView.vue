@@ -138,6 +138,8 @@ import { useAuthStore } from '../stores/authStore'
 ChartJS.register(ArcElement, BarElement, CategoryScale, LinearScale, Tooltip, Legend)
 
 const authStore = useAuthStore()
+
+// Estado general de carga y datos del panel
 const loading = ref(true)
 const stats = ref({})
 const recipesByCategory = ref({})
@@ -145,8 +147,11 @@ const topUsers = ref([])
 const topRecipes = ref([])
 const usersByMonth = ref({})
 const allUsers = ref([])
+
+// Texto de búsqueda para filtrar usuarios en la sección de gestión
 const userSearch = ref('')
 
+// Devuelve los usuarios que coinciden con la búsqueda, o los primeros 5 si no hay filtro
 const visibleUsers = computed(() => {
   const q = userSearch.value.trim().toLowerCase()
   const filtered = q
@@ -159,15 +164,18 @@ const visibleUsers = computed(() => {
   return filtered
 })
 
+// Comprueba si el usuario de la lista es el mismo que está logueado
 function isSelf(user) {
   return Number(user.id) === Number(authStore.currentUser?.id)
 }
 
+// Paleta de colores usada en las gráficas
 const COLORS = [
   '#f45b3f', '#ff8a66', '#ffd580', '#4bc0c0',
   '#36a2eb', '#9966ff', '#ff6384', '#c9cbcf',
 ]
 
+// Datos formateados para la gráfica de recetas por categoría
 const categoryChartData = computed(() => ({
   labels: Object.keys(recipesByCategory.value),
   datasets: [{
@@ -177,6 +185,7 @@ const categoryChartData = computed(() => ({
   }],
 }))
 
+// Datos formateados para la gráfica de nuevos usuarios por mes
 const usersMonthChartData = computed(() => ({
   labels: Object.keys(usersByMonth.value),
   datasets: [{
@@ -187,6 +196,7 @@ const usersMonthChartData = computed(() => ({
   }],
 }))
 
+// Datos formateados para la gráfica de los usuarios con más recetas
 const topUsersChartData = computed(() => ({
   labels: topUsers.value.map(u => u.displayName || u.username),
   datasets: [{
@@ -197,6 +207,7 @@ const topUsersChartData = computed(() => ({
   }],
 }))
 
+// Opciones de configuración para las gráficas de tipo dónut y barras
 const doughnutOptions = {
   responsive: true,
   plugins: { legend: { position: 'bottom' } },
@@ -208,6 +219,7 @@ const barOptions = {
   scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } },
 }
 
+// Cambia el rol de un usuario entre ADMIN y USER
 async function toggleRole(user) {
   const newRole = user.role === 'ADMIN' ? 'USER' : 'ADMIN'
   try {
@@ -218,6 +230,7 @@ async function toggleRole(user) {
   }
 }
 
+// Carga todos los datos del panel al montar la vista
 onMounted(async () => {
   try {
     const [statsRes, categoryRes, topUsersRes, topRecipesRes, monthRes, usersRes] =

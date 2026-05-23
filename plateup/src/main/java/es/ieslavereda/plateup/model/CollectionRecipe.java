@@ -2,11 +2,13 @@ package es.ieslavereda.plateup.model;
 
 import jakarta.persistence.*;
 
+// Relaciona una receta con la colección en la que ha sido guardada por el usuario
 @Entity
 @Table(name = "CollectionRecipes")
 @IdClass(CollectionRecipeId.class)
 public class CollectionRecipe {
 
+    // Clave compuesta formada por la colección y la receta (una receta puede estar en varias colecciones)
     @Id
     @Column(name = "collection_id")
     private Long collection_id;
@@ -15,6 +17,7 @@ public class CollectionRecipe {
     @Column(name = "recipe_id")
     private Long recipe_id;
 
+    // Posición de la receta dentro de la colección, para mantener el orden definido por el usuario
     @Column(name = "order_index")
     private Integer order_index;
 

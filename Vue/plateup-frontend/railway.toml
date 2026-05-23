@@ -1,3 +1,5 @@
+# Configuración de despliegue del frontend en Railway
 [build]
+# Usamos el Dockerfile propio para construir y servir la app con Nginx
 builder = "DOCKERFILE"
 dockerfilePath = "Dockerfile"

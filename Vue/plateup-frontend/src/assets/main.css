@@ -1,5 +1,7 @@
+/* Hoja de estilos principal de PlateUp: importa Tailwind y define el sistema de diseño */
 @import "tailwindcss";
 
+/* Variables CSS globales con los colores y tokens de diseño de PlateUp */
 :root {
   --plateup-primary: #f45b3f;
   --plateup-primary-dark: #e24a2e;
@@ -9,6 +11,7 @@
   --plateup-muted: #6b7280;
 }
 
+/* Reset básico para que la app ocupe toda la pantalla sin márgenes extra */
 html,
 body,
 #app {
@@ -18,6 +21,7 @@ body,
   background: #fff8f5;
 }
 
+/* Tipografía, fondo degradado y respeto por las safe areas del dispositivo móvil */
 body {
   background: linear-gradient(180deg, #fff8f5 0%, #fffdfb 100%);
   color: var(--plateup-text);
@@ -26,6 +30,7 @@ body {
   padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
+/* Eliminamos el outline por defecto de los controles interactivos */
 button,
 input,
 select,
@@ -33,10 +38,12 @@ textarea {
   outline: none;
 }
 
+/* Clase de contenedor centrado con ancho máximo para móvil */
 .container-app {
   @apply mx-auto w-full max-w-md px-4;
 }
 
+/* Clase de tarjeta con bordes redondeados y sombra suave, usada en toda la app */
 .card-soft {
   @apply rounded-3xl bg-white shadow-sm ring-1 ring-black/5;
 }

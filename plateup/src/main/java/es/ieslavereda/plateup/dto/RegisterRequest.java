@@ -1,12 +1,16 @@
 package es.ieslavereda.plateup.dto;
 
+// Datos que el usuario envía al crear una nueva cuenta en PlateUp
 public class RegisterRequest {
+    // Campos obligatorios para crear la cuenta
     private String username;
     private String email;
     private String password;
+    // Campos opcionales del perfil que el usuario puede rellenar al registrarse
     private String displayName;
     private String bio;
     private String avatarUrl;
+    // Visibilidad por defecto de las recetas que publique el usuario (por ejemplo, "public" o "private")
     private String visibilityDefault;
 
     public String getUsername() {

@@ -121,14 +121,18 @@ import { normalizeRecipeCategory } from '../utils/recipeCategories'
 const router = useRouter()
 const authStore = useAuthStore()
 
+// Datos cargados desde la API: usuarios, recetas y relaciones de seguimiento
 const users = ref([])
 const recipes = ref([])
 const follows = ref([])
+
+// Texto introducido en el buscador y usuario en proceso de follow/unfollow
 const searchTerm = ref('')
 const processingUserId = ref(null)
 
 const currentUserId = computed(() => Number(authStore.currentUser?.id || 0))
 
+// Usuarios sugeridos filtrados por el texto de búsqueda, excluyendo al usuario logueado
 const suggestedUsers = computed(() => {
   return users.value
     .filter((user) => Number(user.id) !== currentUserId.value)
@@ -139,6 +143,7 @@ const suggestedUsers = computed(() => {
     .slice(0, 8)
 })
 
+// Recetas filtradas por título, descripción, categoría y nombre del autor
 const filteredRecipes = computed(() => {
   return recipes.value.filter((recipe) => {
     const author = users.value.find((user) => Number(user.id) === Number(recipe.userId))
@@ -161,10 +166,12 @@ function resolveCategory(recipe) {
   return normalizeRecipeCategory(recipe?.category)
 }
 
+// Comprueba si el usuario logueado ya sigue a otro usuario
 function isFollowingUser(userId) {
   return follows.value.some((follow) => Number(follow.followedId) === Number(userId))
 }
 
+// Navega al perfil de un usuario de la lista de sugeridos
 function goToUserProfile(userId) {
   if (!userId) return
 
@@ -179,6 +186,7 @@ function goToUserProfile(userId) {
   })
 }
 
+// Sigue o deja de seguir a un usuario desde la pantalla de exploración
 async function toggleFollow(followedId) {
   if (!currentUserId.value) return
   if (currentUserId.value === Number(followedId)) return
@@ -215,6 +223,7 @@ async function toggleFollow(followedId) {
   }
 }
 
+// Carga todos los usuarios, recetas y seguimientos del usuario actual al montar la vista
 async function loadData() {
   await authStore.initialize()
 

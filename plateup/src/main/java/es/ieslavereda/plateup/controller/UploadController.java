@@ -21,16 +21,19 @@ public class UploadController {
         this.fileStorageService = fileStorageService;
     }
 
+    // Sube una imagen de avatar y devuelve la ruta donde quedó almacenada
     @PostMapping(value = "/avatar", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> uploadAvatar(@RequestPart("file") MultipartFile file) {
         return upload(file, true);
     }
 
+    // Sube una imagen de portada de receta y devuelve la ruta donde quedó almacenada
     @PostMapping(value = "/recipe", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> uploadRecipe(@RequestPart("file") MultipartFile file) {
         return upload(file, false);
     }
 
+    // Lógica compartida de subida: delega en el servicio según sea avatar o imagen de receta
     private ResponseEntity<?> upload(MultipartFile file, boolean avatar) {
         try {
             String path = avatar
@@ -49,6 +52,7 @@ public class UploadController {
         }
     }
 
+    // Construye el cuerpo de respuesta de error con el mensaje indicado
     private Map<String, String> error(String message) {
         Map<String, String> body = new HashMap<>();
         body.put("message", message);

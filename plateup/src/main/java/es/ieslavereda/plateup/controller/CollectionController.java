@@ -28,21 +28,25 @@ public class CollectionController {
         this.userRepository = userRepository;
     }
 
+    // Devuelve todas las colecciones existentes
     @GetMapping
     public List<Collection> getAll() {
         return repository.findAll();
     }
 
+    // Devuelve una colección concreta por su identificador
     @GetMapping("/{id}")
     public Optional<Collection> getById(@PathVariable Long id) {
         return repository.findById(id);
     }
 
+    // Devuelve todas las colecciones que pertenecen a un usuario
     @GetMapping("/user/{userId}")
     public List<Collection> getByUserId(@PathVariable Long userId) {
         return repository.findByUserId(userId);
     }
 
+    // Crea una nueva colección asociándola al usuario autenticado
     @PostMapping
     public ResponseEntity<?> create(@RequestBody Collection collection) {
         User authenticatedUser = getAuthenticatedUser();
@@ -57,6 +61,7 @@ public class CollectionController {
         return ResponseEntity.status(HttpStatus.CREATED).body(savedCollection);
     }
 
+    // Actualiza una colección existente; solo la puede modificar su propietario
     @PutMapping("/{id}")
     public ResponseEntity<?> update(@PathVariable Long id, @RequestBody Collection collection) {
         Optional<Collection> existingOptional = repository.findById(id);
@@ -84,6 +89,7 @@ public class CollectionController {
         return ResponseEntity.ok(updatedCollection);
     }
 
+    // Elimina una colección; solo la puede borrar su propietario
     @DeleteMapping("/{id}")
     public ResponseEntity<?> delete(@PathVariable Long id) {
         Optional<Collection> existingOptional = repository.findById(id);
@@ -104,6 +110,7 @@ public class CollectionController {
         return ResponseEntity.ok().build();
     }
 
+    // Obtiene el usuario autenticado a partir del contexto de seguridad de Spring
     private User getAuthenticatedUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 

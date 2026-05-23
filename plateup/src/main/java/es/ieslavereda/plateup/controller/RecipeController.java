@@ -44,11 +44,13 @@ public class RecipeController {
         this.fileStorageService = fileStorageService;
     }
 
+    // Devuelve todas las recetas ordenadas por fecha de creación descendente
     @GetMapping
     public List<Recipe> getAll() {
         return repository.findAllByOrderByCreatedAtDescIdDesc();
     }
 
+    // Devuelve las recetas del feed del usuario autenticado, paginadas y con filtro opcional por categoría
     @GetMapping("/feed")
     public ResponseEntity<Page<Recipe>> getFeed(
             @RequestParam(defaultValue = "0") int page,
@@ -57,33 +59,39 @@ public class RecipeController {
     ) {
         Long userId = getAuthenticatedUser().getId();
         PageRequest pageable = PageRequest.of(page, size);
+        // Si se pasa categoría se filtra; si no, se devuelven todas las recetas del feed del usuario
         Page<Recipe> result = (category != null && !category.isBlank())
                 ? repository.findFeedForUserAndCategory(userId, category, pageable)
                 : repository.findFeedForUser(userId, pageable);
         return ResponseEntity.ok(result);
     }
 
+    // Devuelve el número total de recetas publicadas por un usuario
     @GetMapping("/count/{userId}")
     public long countByUser(@PathVariable Long userId) {
         return repository.countByUserId(userId);
     }
 
+    // Devuelve varias recetas a la vez dado un listado de IDs
     @GetMapping("/by-ids")
     public List<Recipe> getByIds(@RequestParam List<Long> ids) {
         if (ids == null || ids.isEmpty()) return List.of();
         return repository.findByIdIn(ids);
     }
 
+    // Devuelve una receta concreta por su identificador
     @GetMapping("/{id}")
     public Optional<Recipe> getById(@PathVariable Long id) {
         return repository.findById(id);
     }
 
+    // Devuelve todas las recetas de un usuario ordenadas por fecha descendente
     @GetMapping("/user/{userId}")
     public List<Recipe> getByUserId(@PathVariable Long userId) {
         return repository.findByUserIdOrderByCreatedAtDescIdDesc(userId);
     }
 
+    // Publica una nueva receta y comprueba si el autor desbloquea algún logro por publicaciones
     @PostMapping
     public ResponseEntity<?> create(@Valid @RequestBody Recipe recipe) {
         User authenticatedUser = getAuthenticatedUser();
@@ -103,6 +111,7 @@ public class RecipeController {
         return ResponseEntity.status(HttpStatus.CREATED).body(savedRecipe);
     }
 
+    // Actualiza una receta existente; solo la puede editar su autor
     @PutMapping("/{id}")
     public ResponseEntity<?> update(@PathVariable Long id, @Valid @RequestBody Recipe recipe) {
         Recipe existing = repository.findById(id)
@@ -126,6 +135,7 @@ public class RecipeController {
         recipe.setUpdatedAt(LocalDateTime.now());
         Recipe updatedRecipe = repository.save(recipe);
 
+        // Si la imagen ha cambiado, borramos la anterior del almacenamiento para no acumular archivos huérfanos
         if (!Objects.equals(previousImageUrl, updatedRecipe.getImageUrl())) {
             fileStorageService.deleteIfManagedPath(previousImageUrl);
         }
@@ -133,6 +143,7 @@ public class RecipeController {
         return ResponseEntity.ok(updatedRecipe);
     }
 
+    // Elimina una receta y su imagen asociada; solo lo puede hacer su autor
     @DeleteMapping("/{id}")
     public ResponseEntity<?> delete(@PathVariable Long id) {
         Recipe existing = repository.findById(id)
@@ -152,6 +163,7 @@ public class RecipeController {
         return ResponseEntity.ok().build();
     }
 
+    // Obtiene el usuario autenticado a partir del contexto de seguridad de Spring
     private User getAuthenticatedUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 

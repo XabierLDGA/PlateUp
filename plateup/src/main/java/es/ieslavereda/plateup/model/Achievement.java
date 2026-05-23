@@ -3,20 +3,24 @@ package es.ieslavereda.plateup.model;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
+// Representa un logro que puede desbloquear un usuario dentro de la app
 @Entity
 @Table(name = "Achievements")
 public class Achievement {
 
+    // Identificador único del logro en la base de datos
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    // Nombre, descripción e icono que se muestran al usuario cuando consigue el logro
     private String name;
     private String description;
 
     @Column(name = "icon_url")
     private String iconUrl;
 
+    // Categoría a la que pertenece el logro y puntos que otorga al desbloquearse
     private String category;
     private int points;
 

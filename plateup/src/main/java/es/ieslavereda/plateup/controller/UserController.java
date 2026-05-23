@@ -41,6 +41,7 @@ import java.util.stream.Collectors;
 @CrossOrigin(origins = "*")
 public class UserController {
 
+    // Repositorios de las entidades del usuario necesarios para el borrado en cascada y otras operaciones
     private final UserRepository repository;
     private final RecipeRepository recipeRepository;
     private final RecipeIngredientRepository recipeIngredientRepository;
@@ -54,6 +55,7 @@ public class UserController {
     private final UserChallengeRepository userChallengeRepository;
     private final CollectionRepository collectionRepository;
     private final CollectionRecipeRepository collectionRecipeRepository;
+    // Servicios de seguridad y almacenamiento de ficheros
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final FileStorageService fileStorageService;
@@ -94,11 +96,13 @@ public class UserController {
         this.fileStorageService = fileStorageService;
     }
 
+    // Devuelve todos los usuarios registrados en la aplicación
     @GetMapping
     public List<User> getAll() {
         return repository.findAll();
     }
 
+    // Devuelve un usuario concreto por su identificador
     @GetMapping("/{id}")
     public ResponseEntity<User> getById(@PathVariable Long id) {
         return repository.findById(id)
@@ -106,6 +110,7 @@ public class UserController {
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
+    // Crea un usuario directamente; si la contraseña no está encriptada, la encripta antes de guardar
     @PostMapping
     public User create(@RequestBody User user) {
         if (user.getPasswordHash() != null && !user.getPasswordHash().isBlank() && !isBcryptHash(user.getPasswordHash())) {
@@ -124,6 +129,7 @@ public class UserController {
         return repository.save(user);
     }
 
+    // Autentica a un usuario con su nombre de usuario o email y devuelve un token JWT
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest request) {
         String identifier = request.getIdentifier() == null ? "" : request.getIdentifier().trim();
@@ -133,6 +139,7 @@ public class UserController {
             return ResponseEntity.badRequest().body(error("Username/email and password are required."));
         }
 
+        // Si el identificador contiene @ lo tratamos como email; si no, como nombre de usuario
         Optional<User> userOptional = identifier.contains("@")
                 ? repository.findByEmail(identifier)
                 : repository.findByUsername(identifier);
@@ -153,6 +160,7 @@ public class UserController {
         return ResponseEntity.ok(new AuthResponse(token, user));
     }
 
+    // Registra un nuevo usuario, valida los datos y devuelve un token JWT al terminar
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody RegisterRequest request) {
         String username = request.getUsername() == null ? "" : request.getUsername().trim();
@@ -173,6 +181,7 @@ public class UserController {
             displayName = username;
         }
 
+        // Si el valor de visibilidad no es uno de los permitidos, usamos "public" como valor por defecto
         if (!(visibilityDefault.equals("private") || visibilityDefault.equals("followers") || visibilityDefault.equals("public"))) {
             visibilityDefault = "public";
         }
@@ -204,6 +213,7 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.CREATED).body(new AuthResponse(token, createdUser));
     }
 
+    // Actualiza el perfil de un usuario; solo lo puede hacer el propio usuario
     @PutMapping("/{id}")
     public ResponseEntity<?> update(@PathVariable Long id, @RequestBody User user) {
         Optional<User> existingOptional = repository.findById(id);
@@ -242,6 +252,7 @@ public class UserController {
 
         User updatedUser = repository.save(existing);
 
+        // Si el avatar ha cambiado, eliminamos el anterior del almacenamiento para evitar archivos huérfanos
         if (!Objects.equals(previousAvatarUrl, updatedUser.getAvatarUrl())) {
             fileStorageService.deleteIfManagedPath(previousAvatarUrl);
         }
@@ -249,6 +260,7 @@ public class UserController {
         return ResponseEntity.ok(updatedUser);
     }
 
+    // Registra la actividad diaria del usuario y actualiza su racha de días consecutivos
     @PostMapping("/{id}/daily-checkin")
     public ResponseEntity<?> dailyCheckin(@PathVariable Long id) {
         Optional<User> userOptional = repository.findById(id);
@@ -274,11 +286,12 @@ public class UserController {
             long daysBetween = ChronoUnit.DAYS.between(lastActiveDate, today);
 
             if (daysBetween == 0) {
-                // Ya hizo check-in hoy
+                // Ya hizo check-in hoy, no se modifica nada
             } else if (daysBetween == 1) {
                 user.setStreakCount((user.getStreakCount() == null ? 0 : user.getStreakCount()) + 1);
                 user.setLastActiveDate(today);
             } else {
+                // Si han pasado más de un día, la racha se reinicia desde 1
                 user.setStreakCount(1);
                 user.setLastActiveDate(today);
             }
@@ -290,6 +303,7 @@ public class UserController {
         return ResponseEntity.ok(savedUser);
     }
 
+    // Cambia el rol de un usuario; solo lo puede hacer un administrador
     @PutMapping("/{id}/role")
     public ResponseEntity<?> updateRole(@PathVariable Long id, @RequestBody Map<String, String> body) {
         User authenticatedUser = getAuthenticatedUser();
@@ -313,6 +327,7 @@ public class UserController {
         return ResponseEntity.ok(repository.save(user));
     }
 
+    // Elimina la cuenta del usuario y borra en cascada todas sus recetas, colecciones, likes y demás datos
     @DeleteMapping("/{id}")
     @Transactional
     public ResponseEntity<?> delete(@PathVariable Long id) {
@@ -336,6 +351,7 @@ public class UserController {
                 .map(Recipe::getId)
                 .toList();
 
+        // Recogemos las rutas de las imágenes de las recetas para borrarlas del almacenamiento después
         List<String> recipeImagesToDelete = userRecipes.stream()
                 .map(Recipe::getImageUrl)
                 .filter(Objects::nonNull)
@@ -376,6 +392,7 @@ public class UserController {
         return ResponseEntity.ok(success("Account deleted successfully."));
     }
 
+    // Obtiene el usuario autenticado a partir del contexto de seguridad de Spring
     private User getAuthenticatedUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
@@ -387,6 +404,7 @@ public class UserController {
                 .orElseThrow(() -> new AuthenticationRequiredException("Authenticated user not found"));
     }
 
+    // Verifica la contraseña del usuario y, si estaba en texto plano, la migra a bcrypt automáticamente
     private boolean matchesPasswordAndMigrateLegacy(User user, String rawPassword) {
         String storedPassword = user.getPasswordHash();
 
@@ -408,14 +426,17 @@ public class UserController {
         return false;
     }
 
+    // Detecta si una cadena ya es un hash bcrypt comprobando los prefijos estándar del algoritmo
     private boolean isBcryptHash(String value) {
         return value.startsWith("$2a$") || value.startsWith("$2b$") || value.startsWith("$2y$");
     }
 
+    // Devuelve el valor entrante si no es nulo; de lo contrario, mantiene el valor actual
     private String valueOrDefault(String incomingValue, String currentValue) {
         return incomingValue != null ? incomingValue : currentValue;
     }
 
+    // Normaliza el valor de visibilidad aceptando solo "public", "followers" o "private"; el resto vuelve a "public"
     private String normalizeVisibility(String visibilityDefault) {
         if (visibilityDefault == null || visibilityDefault.isBlank()) {
             return "public";

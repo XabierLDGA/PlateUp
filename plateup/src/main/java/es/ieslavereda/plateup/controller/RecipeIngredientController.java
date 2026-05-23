@@ -35,11 +35,13 @@ public class RecipeIngredientController {
         this.userRepository = userRepository;
     }
 
+    // Devuelve todos los ingredientes que forman parte de una receta concreta
     @GetMapping("/recipe/{recipeId}")
     public List<RecipeIngredient> getByRecipe(@PathVariable Long recipeId) {
         return repository.findByRecipeId(recipeId);
     }
 
+    // Añade un ingrediente a una receta; solo lo puede hacer el autor de la receta
     @PostMapping
     public ResponseEntity<?> create(@RequestBody RecipeIngredient recipeIngredient) {
         Optional<Recipe> recipeOptional = recipeRepository.findById(recipeIngredient.getRecipeId());
@@ -60,6 +62,7 @@ public class RecipeIngredientController {
         return ResponseEntity.status(HttpStatus.CREATED).body(saved);
     }
 
+    // Elimina un ingrediente de una receta; solo lo puede hacer el autor de la receta
     @DeleteMapping("/{recipeId}/{ingredientId}")
     public ResponseEntity<?> delete(@PathVariable Long recipeId,
                                     @PathVariable Long ingredientId) {
@@ -81,6 +84,7 @@ public class RecipeIngredientController {
         return ResponseEntity.ok().build();
     }
 
+    // Obtiene el usuario autenticado a partir del contexto de seguridad de Spring
     private User getAuthenticatedUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 

@@ -312,22 +312,34 @@ import { getUserAvatar } from '../utils/userAvatar'
 const router = useRouter()
 const authStore = useAuthStore()
 
+// Pestaña activa en la vista del perfil: 'recipes' o 'achievements'
 const activeTab = ref('recipes')
+
+// Recetas propias creadas por el usuario
 const myRecipes = ref([])
+// Registros de recetas cocinadas y todas las recetas necesarias para resolverlas
 const cookedEntries = ref([])
 const allRecipes = ref([])
+
+// Contadores de seguidores y seguidos del usuario
 const followersCount = ref(0)
 const followingCount = ref(0)
+
+// Datos de logros
 const achievements = ref([])
 const userAchievements = ref([])
+
+// Estado del modal de eliminación de receta
 const deletingRecipeId = ref(null)
 const deleteErrorMessage = ref('')
 const showDeleteModal = ref(false)
 const recipeToDelete = ref(null)
 
+// Usuario actual y su avatar
 const currentUser = computed(() => authStore.currentUser)
 const userAvatar = computed(() => getUserAvatar(currentUser.value))
 
+// Lista de logros conseguidos por el usuario, cruzando sus IDs con los datos completos
 const earnedAchievements = computed(() => {
   if (!currentUser.value?.id) return []
 
@@ -344,6 +356,7 @@ const earnedAchievements = computed(() => {
     .filter(Boolean)
 })
 
+// Recetas cocinadas ajenas (excluye las propias para no duplicarlas)
 const cookedRecipeDetails = computed(() => {
   const myIds = new Set(myRecipes.value.map((r) => Number(r.id)))
 
@@ -359,6 +372,7 @@ function resolveRecipeImage(recipe) {
   return getRecipeImage(recipe)
 }
 
+// Convierte segundos en un formato legible de tiempo tipo "5m 30s" o "1h 05m"
 function formatElapsed(seconds) {
   if (!seconds) return '—'
   const h = Math.floor(seconds / 3600)
@@ -368,14 +382,17 @@ function formatElapsed(seconds) {
   return h > 0 ? `${pad(h)}h ${pad(m)}m` : `${pad(m)}m ${pad(s)}s`
 }
 
+// Navega al propio perfil del usuario
 function goToCurrentUserProfile() {
   router.push({ name: 'profile' })
 }
 
+// Navega a la pantalla de edición de perfil
 function goToEditProfile() {
   router.push({ name: 'edit-profile' })
 }
 
+// Abre la vista de conexiones en la pestaña indicada (followers o following)
 function openConnections(tab) {
   if (!currentUser.value?.id) return
 
@@ -386,15 +403,18 @@ function openConnections(tab) {
   })
 }
 
+// Cierra sesión y redirige a la pantalla de inicio
 function logout() {
   authStore.logout()
   router.push('/')
 }
 
+// Redirige a la vista de cocina para cocinar una receta de nuevo
 function cookAgain(recipeId) {
   router.push({ name: 'cooking', params: { id: recipeId } })
 }
 
+// Abre el modal de confirmación para eliminar una receta
 function openDeleteModal(recipe) {
   if (!recipe?.id) return
 
@@ -403,6 +423,7 @@ function openDeleteModal(recipe) {
   showDeleteModal.value = true
 }
 
+// Cierra el modal de eliminar receta si no hay una eliminación en curso
 function closeDeleteModal() {
   if (deletingRecipeId.value !== null) return
 
@@ -410,6 +431,7 @@ function closeDeleteModal() {
   recipeToDelete.value = null
 }
 
+// Elimina la receta seleccionada y la quita de la lista local
 async function deleteSelectedRecipe() {
   const recipeId = Number(recipeToDelete.value?.id)
 
@@ -431,6 +453,7 @@ async function deleteSelectedRecipe() {
   }
 }
 
+// Carga todas las recetas, seguidores, logros y recetas cocinadas del usuario
 async function loadData() {
   await authStore.initialize()
 
@@ -460,6 +483,7 @@ async function loadData() {
   userAchievements.value = userAchievementsResponse.status === 'fulfilled' ? userAchievementsResponse.value.data || [] : []
   cookedEntries.value = cookedResponse.status === 'fulfilled' ? cookedResponse.value.data || [] : []
 
+  // Cargamos los datos de las recetas cocinadas para poder mostrar su información
   const cookedIds = [...new Set(cookedEntries.value.map((c) => Number(c.recipeId)).filter(Boolean))]
   if (cookedIds.length > 0) {
     const allRecipesResponse = await recipeService.getByIds(cookedIds)

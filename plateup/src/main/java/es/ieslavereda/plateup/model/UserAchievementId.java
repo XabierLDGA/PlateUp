@@ -3,6 +3,8 @@ package es.ieslavereda.plateup.model;
 import java.io.Serializable;
 import java.util.Objects;
 
+// Clase auxiliar que representa la clave primaria compuesta de UserAchievement
+// JPA la necesita para identificar de forma única el logro de cada usuario
 public class UserAchievementId implements Serializable {
     private Long user_id;
     private Long achievement_id;
@@ -13,6 +15,7 @@ public class UserAchievementId implements Serializable {
         this.achievement_id = achievement_id;
     }
 
+    // equals y hashCode son obligatorios en las claves compuestas para que JPA pueda compararlas correctamente
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

@@ -18,32 +18,32 @@ public class AchievementController {
         this.repository = repository;
     }
 
-    // 🔹 GET todos los achievements
+    // Devuelve todos los logros disponibles en la aplicación
     @GetMapping
     public List<Achievement> getAll() {
         return repository.findAll();
     }
 
-    // 🔹 GET achievement por ID
+    // Devuelve un logro concreto buscándolo por su identificador
     @GetMapping("/{id}")
     public Optional<Achievement> getById(@PathVariable Long id) {
         return repository.findById(id);
     }
 
-    // 🔹 POST crear nuevo achievement
+    // Crea un nuevo logro y lo guarda en la base de datos
     @PostMapping
     public Achievement create(@RequestBody Achievement achievement) {
         return repository.save(achievement);
     }
 
-    // 🔹 PUT actualizar achievement
+    // Actualiza los datos de un logro existente
     @PutMapping("/{id}")
     public Achievement update(@PathVariable Long id, @RequestBody Achievement achievement) {
         achievement.setId(id);
         return repository.save(achievement);
     }
 
-    // 🔹 DELETE eliminar achievement
+    // Elimina un logro por su identificador
     @DeleteMapping("/{id}")
     public void delete(@PathVariable Long id) {
         repository.deleteById(id);

@@ -23,6 +23,7 @@ import java.util.stream.Collectors;
 @CrossOrigin(origins = "*")
 public class AdminController {
 
+    // Repositorios necesarios para consultar las distintas entidades del panel de administración
     private final UserRepository userRepository;
     private final RecipeRepository recipeRepository;
     private final LikeRepository likeRepository;
@@ -40,6 +41,7 @@ public class AdminController {
         this.cookedRecipeRepository = cookedRecipeRepository;
     }
 
+    // Devuelve un resumen con los totales de usuarios, recetas, likes y recetas cocinadas
     @GetMapping("/stats")
     public ResponseEntity<?> getStats() {
         checkAdminAccess();
@@ -51,6 +53,7 @@ public class AdminController {
         return ResponseEntity.ok(stats);
     }
 
+    // Devuelve cuántas recetas hay por cada categoría, útil para las gráficas del panel
     @GetMapping("/recipes-by-category")
     public ResponseEntity<?> getRecipesByCategory() {
         checkAdminAccess();
@@ -61,6 +64,7 @@ public class AdminController {
         return ResponseEntity.ok(result);
     }
 
+    // Devuelve los 5 usuarios con más recetas publicadas
     @GetMapping("/top-users")
     public ResponseEntity<?> getTopUsers() {
         checkAdminAccess();
@@ -82,6 +86,7 @@ public class AdminController {
         return ResponseEntity.ok(result);
     }
 
+    // Devuelve las 5 recetas con más likes
     @GetMapping("/top-recipes")
     public ResponseEntity<?> getTopRecipes() {
         checkAdminAccess();
@@ -103,6 +108,7 @@ public class AdminController {
         return ResponseEntity.ok(result);
     }
 
+    // Devuelve el número de usuarios nuevos registrados en los últimos 6 meses, agrupados por mes
     @GetMapping("/users-by-month")
     public ResponseEntity<?> getUsersByMonth() {
         checkAdminAccess();
@@ -114,6 +120,7 @@ public class AdminController {
         return ResponseEntity.ok(result);
     }
 
+    // Lanza una excepción si el usuario autenticado no tiene el rol de administrador
     private void checkAdminAccess() {
         User user = getAuthenticatedUser();
         if (!"ADMIN".equals(user.getRole())) {
@@ -121,6 +128,7 @@ public class AdminController {
         }
     }
 
+    // Obtiene el usuario autenticado a partir del contexto de seguridad de Spring
     private User getAuthenticatedUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || authentication.getName() == null) {

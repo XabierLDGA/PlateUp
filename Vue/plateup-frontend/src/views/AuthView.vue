@@ -149,14 +149,17 @@ import { useAuthStore } from '../stores/authStore'
 const router = useRouter()
 const authStore = useAuthStore()
 
+// Controla si se muestra el formulario de login o el de registro
 const mode = ref('login')
 const errorMessage = ref('')
 
+// Campos del formulario de inicio de sesión
 const loginForm = ref({
   identifier: '',
   password: '',
 })
 
+// Campos del formulario de creación de cuenta
 const registerForm = ref({
   username: '',
   displayName: '',
@@ -166,11 +169,13 @@ const registerForm = ref({
   visibilityDefault: 'public',
 })
 
+// Cambia entre el modo login y registro, limpiando el mensaje de error
 function setMode(nextMode) {
   mode.value = nextMode
   errorMessage.value = ''
 }
 
+// Envía las credenciales de login y redirige al perfil si tiene éxito
 async function submitLogin() {
   errorMessage.value = ''
 
@@ -186,6 +191,7 @@ async function submitLogin() {
   }
 }
 
+// Envía los datos del registro y redirige al perfil si la cuenta se crea correctamente
 async function submitRegister() {
   errorMessage.value = ''
 

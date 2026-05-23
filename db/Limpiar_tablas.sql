@@ -6,7 +6,8 @@ USE plateup;
 -- Desactivar restricciones de claves foráneas
 SET FOREIGN_KEY_CHECKS = 0;
 
--- Orden correcto (desde tablas hijas a padres)
+-- Vaciamos primero las tablas hijas (las que tienen claves foráneas) y luego las padres,
+-- para evitar errores de integridad referencial incluso con FK_CHECKS desactivado
 TRUNCATE TABLE AuditLogs;
 TRUNCATE TABLE Reports;
 TRUNCATE TABLE Notifications;

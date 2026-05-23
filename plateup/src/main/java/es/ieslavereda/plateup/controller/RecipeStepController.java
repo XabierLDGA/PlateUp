@@ -35,11 +35,13 @@ public class RecipeStepController {
         this.userRepository = userRepository;
     }
 
+    // Devuelve todos los pasos de una receta ordenados según el repositorio
     @GetMapping("/recipe/{recipeId}")
     public List<RecipeStep> getStepsByRecipe(@PathVariable Long recipeId) {
         return recipeStepRepository.findByRecipeId(recipeId);
     }
 
+    // Añade un nuevo paso a una receta; solo lo puede hacer el autor de la receta
     @PostMapping
     public ResponseEntity<?> create(@RequestBody RecipeStep step) {
         Optional<Recipe> recipeOptional = recipeRepository.findById(step.getRecipeId());
@@ -60,6 +62,7 @@ public class RecipeStepController {
         return ResponseEntity.status(HttpStatus.CREATED).body(savedStep);
     }
 
+    // Actualiza un paso existente de una receta; solo lo puede editar el autor de la receta
     @PutMapping("/{id}")
     public ResponseEntity<?> update(@PathVariable Long id, @RequestBody RecipeStep step) {
         Optional<RecipeStep> existingOptional = recipeStepRepository.findById(id);
@@ -90,6 +93,7 @@ public class RecipeStepController {
         return ResponseEntity.ok(updatedStep);
     }
 
+    // Elimina un paso de una receta; solo lo puede hacer el autor de la receta
     @DeleteMapping("/{id}")
     public ResponseEntity<?> delete(@PathVariable Long id) {
         Optional<RecipeStep> existingOptional = recipeStepRepository.findById(id);
@@ -117,6 +121,7 @@ public class RecipeStepController {
         return ResponseEntity.ok().build();
     }
 
+    // Obtiene el usuario autenticado a partir del contexto de seguridad de Spring
     private User getAuthenticatedUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 

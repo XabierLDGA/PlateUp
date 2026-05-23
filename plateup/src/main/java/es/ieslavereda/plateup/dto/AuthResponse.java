@@ -2,9 +2,12 @@ package es.ieslavereda.plateup.dto;
 
 import es.ieslavereda.plateup.model.User;
 
+// Respuesta que se devuelve al cliente cuando el login o el registro son exitosos
 public class AuthResponse {
 
+    // El token JWT que el cliente debe incluir en las siguientes peticiones
     private String token;
+    // Datos completos del usuario para que el frontend pueda mostrarlos sin otra llamada a la API
     private User user;
 
     public AuthResponse() {

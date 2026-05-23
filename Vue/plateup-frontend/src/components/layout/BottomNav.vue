@@ -16,6 +16,7 @@
 </template>
 
 <script setup>
+// Barra de navegación inferior flotante, visible en todas las páginas principales de la app
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { House, Search, SquarePen, User, LayoutDashboard } from 'lucide-vue-next'
@@ -24,6 +25,8 @@ import { useAuthStore } from '../../stores/authStore'
 const route = useRoute()
 const authStore = useAuthStore()
 
+// Generamos los ítems de navegación de forma dinámica:
+// si el usuario es administrador, añadimos el acceso al panel de administración
 const navItems = computed(() => {
   const items = [
     { name: 'home', label: 'Home', to: '/home', icon: House },

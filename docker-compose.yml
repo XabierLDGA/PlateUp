@@ -1,4 +1,7 @@
+# Orquestación de los tres servicios de PlateUp: base de datos, backend y frontend
 services:
+
+  # Base de datos MySQL con codificación UTF-8 para soportar caracteres especiales
   db:
     image: mysql:8.0
     command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
@@ -7,7 +10,9 @@ services:
       MYSQL_DATABASE: plateup
     volumes:
       - mysql_data:/var/lib/mysql
+      # Script de inicialización que se ejecuta la primera vez que se levanta el contenedor
       - "./db/Pruebas.sql:/docker-entrypoint-initdb.d/init.sql"
+    # Comprobamos que la base de datos está lista antes de arrancar el backend
     healthcheck:
       test: ["CMD", "mysql", "-uroot", "-p${DB_PASSWORD:-plateup123}", "-e", "SELECT 1 FROM information_schema.schemata WHERE schema_name='plateup'"]
       interval: 10s
@@ -15,6 +20,7 @@ services:
       retries: 15
       start_period: 60s
 
+  # Backend Spring Boot: espera a que la BD esté sana antes de arrancar
   backend:
     build: ./plateup
     environment:
@@ -24,6 +30,7 @@ services:
       APP_JWT_SECRET: ${JWT_SECRET:-plateup-super-secret-key-change-this-in-production}
       APP_UPLOAD_DIR: /app/uploads
     volumes:
+      # Volumen persistente para las imágenes subidas por los usuarios
       - uploads_data:/app/uploads
     restart: on-failure
     depends_on:
@@ -32,6 +39,7 @@ services:
     ports:
       - "8080:8080"
 
+  # Frontend Vue 3 servido con Nginx
   frontend:
     build: ./Vue/plateup-frontend
     ports:
@@ -39,6 +47,7 @@ services:
     depends_on:
       - backend
 
+# Volúmenes persistentes para que los datos no se pierdan al reiniciar los contenedores
 volumes:
   mysql_data:
   uploads_data:

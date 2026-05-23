@@ -19,25 +19,25 @@ public class UserChallengeController {
         this.repository = repository;
     }
 
-    // 🔹 GET todos los retos de todos los usuarios
+    // Devuelve el progreso de todos los usuarios en todos los retos
     @GetMapping
     public List<UserChallenge> getAll() {
         return repository.findAll();
     }
 
-    // 🔹 GET reto específico de un usuario
+    // Devuelve el progreso de un usuario en un reto concreto
     @GetMapping("/{userId}/{challengeId}")
     public Optional<UserChallenge> getById(@PathVariable Long userId, @PathVariable Long challengeId) {
         return repository.findById(new UserChallengeId(userId, challengeId));
     }
 
-    // 🔹 POST asignar un reto a un usuario
+    // Asigna un reto a un usuario y guarda su estado inicial
     @PostMapping
     public UserChallenge create(@RequestBody UserChallenge userChallenge) {
         return repository.save(userChallenge);
     }
 
-    // 🔹 PUT actualizar progreso o estado de un reto
+    // Actualiza el progreso o el estado de un reto para un usuario
     @PutMapping("/{userId}/{challengeId}")
     public UserChallenge update(
             @PathVariable Long userId,
@@ -49,7 +49,7 @@ public class UserChallengeController {
         return repository.save(userChallenge);
     }
 
-    // 🔹 DELETE eliminar un reto de un usuario
+    // Elimina la relación de un usuario con un reto
     @DeleteMapping("/{userId}/{challengeId}")
     public void delete(@PathVariable Long userId, @PathVariable Long challengeId) {
         repository.deleteById(new UserChallengeId(userId, challengeId));

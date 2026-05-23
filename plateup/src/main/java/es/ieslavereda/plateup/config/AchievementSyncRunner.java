@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
+// Se ejecuta automáticamente al arrancar la aplicación para sincronizar los logros de todos los usuarios
 @Component
 public class AchievementSyncRunner implements CommandLineRunner {
 
@@ -17,6 +18,7 @@ public class AchievementSyncRunner implements CommandLineRunner {
         this.achievementUnlockService = achievementUnlockService;
     }
 
+    // Lanza la sincronización de logros al inicio; si falla, registra el error pero no impide que la app arranque
     @Override
     public void run(String... args) {
         try {

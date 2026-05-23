@@ -4,20 +4,24 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import java.time.LocalDateTime;
 
+// Representa un comentario que un usuario ha escrito sobre una receta concreta
 @Entity
 @Table(name = "Comments")
 public class Comment {
 
+    // Identificador único del comentario
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    // Usuario que ha escrito el comentario y receta sobre la que opina
     @Column(name = "user_id")
     private Long userId;
 
     @Column(name = "recipe_id")
     private Long recipeId;
 
+    // Texto del comentario; no puede estar vacío
     @NotBlank(message = "Comment text is required")
     private String text;
 

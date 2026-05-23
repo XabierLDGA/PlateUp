@@ -1,10 +1,13 @@
 <script setup>
+// Componente de ejemplo generado por el scaffolding de Vite + Vue
+// Sirve para comprobar que el HMR (recarga en caliente) funciona correctamente
 import { ref } from 'vue'
 
 defineProps({
   msg: String,
 })
 
+// Contador reactivo para demostrar el funcionamiento básico de ref()
 const count = ref(0)
 </script>
 

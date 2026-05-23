@@ -1,5 +1,5 @@
 -- ===========================================
--- 🧍 USUARIOS Y RECETAS
+-- USUARIOS Y RECETAS
 -- ===========================================
 
 -- Ver todos los usuarios registrados
@@ -31,7 +31,7 @@ JOIN Utensils u ON ru.utensil_id = u.id
 ORDER BY r.title;
 
 -- ===========================================
--- 💬 SOCIAL
+-- SOCIAL
 -- ===========================================
 
 -- Ver quién sigue a quién
@@ -62,12 +62,13 @@ JOIN Users u ON col.user_id = u.id
 JOIN Recipes r ON cr.recipe_id = r.id
 ORDER BY col.name;
 
+-- Comprobación directa de las relaciones entre colecciones y recetas
 USE plateup;
 SELECT * FROM CollectionRecipes;
 
 
 -- ===========================================
--- 🏆 GAMIFICACIÓN
+-- GAMIFICACIÓN
 -- ===========================================
 
 -- Ver todos los logros disponibles
@@ -87,7 +88,7 @@ JOIN Challenges c ON uc.challenge_id = c.id
 JOIN Users u ON uc.user_id = u.id;
 
 -- ===========================================
--- ⚙️ COMPLEMENTARIAS
+-- COMPLEMENTARIAS
 -- ===========================================
 
 -- Ver notificaciones con origen y destino
@@ -112,7 +113,7 @@ LEFT JOIN Users u ON a.actor_user_id = u.id
 ORDER BY a.created_at DESC;
 
 -- ===========================================
--- 🔍 CONSULTAS DE COMPROBACIÓN RÁPIDA
+-- CONSULTAS DE COMPROBACIÓN RÁPIDA
 -- ===========================================
 
 -- Contar cuántas recetas tiene cada usuario

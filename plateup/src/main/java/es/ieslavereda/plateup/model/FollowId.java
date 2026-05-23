@@ -3,6 +3,8 @@ package es.ieslavereda.plateup.model;
 import java.io.Serializable;
 import java.util.Objects;
 
+// Clase auxiliar que representa la clave primaria compuesta de Follow
+// JPA la necesita para distinguir cada relación de seguimiento de forma única
 public class FollowId implements Serializable {
     private Long followerId;
     private Long followedId;
@@ -13,6 +15,7 @@ public class FollowId implements Serializable {
         this.followedId = followedId;
     }
 
+    // equals y hashCode son obligatorios en las claves compuestas para que JPA pueda compararlas correctamente
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

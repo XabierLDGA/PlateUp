@@ -1,7 +1,9 @@
 import axios from 'axios'
 
+// Clave usada para guardar el token JWT en el localStorage del navegador
 const TOKEN_KEY = 'plateup_auth_token'
 
+// Instancia de axios preconfigurada con la URL base del backend y cabeceras por defecto
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL,
   headers: {
@@ -9,10 +11,13 @@ const api = axios.create({
   },
 })
 
+// Recupera el token JWT guardado en el localStorage, si existe
 export function getStoredToken() {
   return localStorage.getItem(TOKEN_KEY)
 }
 
+// Guarda el token en el localStorage y lo añade a las cabeceras de todas las peticiones.
+// Si se pasa null o undefined, borra el token y elimina la cabecera de autorización.
 export function setAuthToken(token) {
   if (token) {
     localStorage.setItem(TOKEN_KEY, token)
@@ -23,11 +28,13 @@ export function setAuthToken(token) {
   }
 }
 
+// Si ya había un token guardado de sesiones anteriores, lo restauramos al arrancar
 const existingToken = getStoredToken()
 if (existingToken) {
   setAuthToken(existingToken)
 }
 
+// Interceptor de respuestas: gestiona errores de autenticación de forma global
 api.interceptors.response.use(
   (response) => response,
   (error) => {

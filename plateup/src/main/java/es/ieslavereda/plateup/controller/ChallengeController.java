@@ -18,32 +18,32 @@ public class ChallengeController {
         this.repository = repository;
     }
 
-    // 🔹 GET todos los challenges
+    // Devuelve todos los retos disponibles en la aplicación
     @GetMapping
     public List<Challenge> getAll() {
         return repository.findAll();
     }
 
-    // 🔹 GET challenge por ID
+    // Devuelve un reto concreto por su identificador
     @GetMapping("/{id}")
     public Optional<Challenge> getById(@PathVariable Long id) {
         return repository.findById(id);
     }
 
-    // 🔹 POST crear un nuevo challenge
+    // Crea un nuevo reto y lo persiste en la base de datos
     @PostMapping
     public Challenge create(@RequestBody Challenge challenge) {
         return repository.save(challenge);
     }
 
-    // 🔹 PUT actualizar un challenge existente
+    // Actualiza los datos de un reto existente
     @PutMapping("/{id}")
     public Challenge update(@PathVariable Long id, @RequestBody Challenge challenge) {
         challenge.setId(id);
         return repository.save(challenge);
     }
 
-    // 🔹 DELETE eliminar challenge
+    // Elimina un reto por su identificador
     @DeleteMapping("/{id}")
     public void delete(@PathVariable Long id) {
         repository.deleteById(id);

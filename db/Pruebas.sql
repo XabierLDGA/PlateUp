@@ -3,8 +3,10 @@
 -- Script corregido y consistente con backend/frontend
 -- ===========================================
 
+-- Forzamos UTF-8 para la sesión de conexión, necesario en algunos clientes MySQL
 SET NAMES utf8mb4;
 
+-- Recreamos la base de datos desde cero con soporte completo para emojis y caracteres especiales
 DROP DATABASE IF EXISTS plateup;
 CREATE DATABASE plateup CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE plateup;
@@ -12,6 +14,7 @@ USE plateup;
 -- ===========================================
 -- USERS
 -- ===========================================
+-- Tabla de usuarios: incluye perfil, credenciales, racha de actividad y rol (USER/ADMIN)
 CREATE TABLE Users (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     username VARCHAR(50) NOT NULL UNIQUE,
@@ -279,6 +282,7 @@ CREATE TABLE AuditLogs (
 -- ===========================================
 -- COOKED RECIPES
 -- ===========================================
+-- Registra qué recetas ha cocinado cada usuario y cuánto tiempo tardó
 CREATE TABLE CookedRecipes (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     user_id BIGINT NOT NULL,
@@ -293,6 +297,7 @@ CREATE TABLE CookedRecipes (
 -- ===========================================
 -- ÍNDICES
 -- ===========================================
+-- Índices para agilizar las consultas más frecuentes de la aplicación
 CREATE INDEX idx_recipe_user ON Recipes(user_id);
 CREATE INDEX idx_step_recipe ON RecipeSteps(recipe_id);
 CREATE INDEX idx_recipeingredient_recipe ON RecipeIngredients(recipe_id);
@@ -305,6 +310,7 @@ CREATE INDEX idx_cooked_user ON CookedRecipes(user_id);
 -- ===========================================
 -- LIMPIEZA DE DATOS
 -- ===========================================
+-- Vaciamos todas las tablas antes de insertar los datos de prueba para evitar duplicados
 SET FOREIGN_KEY_CHECKS = 0;
 
 TRUNCATE TABLE AuditLogs;
@@ -532,6 +538,7 @@ VALUES
 -- ===========================================
 -- SOCIAL
 -- ===========================================
+-- Asignamos el rol de administrador al usuario principal de prueba
 UPDATE Users SET role = 'ADMIN' WHERE username = 'camaron';
 
 INSERT INTO Follows (follower_id, followed_id)
@@ -559,6 +566,7 @@ VALUES
 -- ===========================================
 -- ACHIEVEMENTS
 -- ===========================================
+-- Logros del sistema de gamificación agrupados por categoría: recetas, likes, cocinadas y seguidores
 INSERT INTO Achievements (name, description, icon_url, category, points)
 VALUES
 ('Tu primera receta','Publica tu primera receta en PlateUp.','https://picsum.photos/50?achievement_recipe_1','recipes',50),

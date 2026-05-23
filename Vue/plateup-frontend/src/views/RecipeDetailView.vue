@@ -213,12 +213,17 @@ const route = useRoute()
 const router = useRouter()
 const authStore = useAuthStore()
 
+// Datos principales de la receta, su autor y los likes
 const recipe = ref(null)
 const author = ref(null)
 const likes = ref([])
+
+// Ingredientes y pasos de la receta
 const ingredients = ref([])
 const recipeIngredients = ref([])
 const recipeSteps = ref([])
+
+// Estado de seguimiento, ingredientes marcados, cargas y errores
 const currentUserFollowsAuthor = ref(false)
 const checkedIngredients = ref([])
 const followLoading = ref(false)
@@ -228,14 +233,17 @@ const detailError = ref('')
 
 const currentUserId = computed(() => Number(authStore.currentUser?.id || 0))
 
+// Imagen y categoría normalizadas de la receta
 const recipeImage = computed(() => getRecipeImage(recipe.value))
 const recipeCategory = computed(() => normalizeRecipeCategory(recipe.value?.category))
 
+// Número total de likes que tiene esta receta
 const likesCount = computed(() => {
   if (!recipe.value?.id) return 0
   return likes.value.filter((like) => Number(like.recipeId) === Number(recipe.value.id)).length
 })
 
+// Indica si el usuario logueado ha dado like a esta receta
 const isLikedByCurrentUser = computed(() => {
   if (!currentUserId.value || !recipe.value?.id) return false
 
@@ -246,20 +254,24 @@ const isLikedByCurrentUser = computed(() => {
   )
 })
 
+// Datos del autor de la receta
 const authorId = computed(() => Number(author.value?.id || recipe.value?.userId || 0))
 const authorName = computed(() => author.value?.displayName || 'PlateUp Chef')
 const authorUsername = computed(() => author.value?.username || 'plateup')
 const authorAvatar = computed(() => getUserAvatar(author.value))
 
+// Indica si la receta pertenece al usuario logueado
 const isOwnRecipe = computed(() => {
   return currentUserId.value && authorId.value && currentUserId.value === authorId.value
 })
 
+// Indica si el usuario logueado sigue al autor de la receta
 const isFollowingAuthor = computed(() => {
   if (!currentUserId.value || !authorId.value || isOwnRecipe.value) return false
   return currentUserFollowsAuthor.value
 })
 
+// Construye la lista de ingredientes enriquecida con nombre, cantidad y notas
 const ingredientChecklist = computed(() => {
   return recipeIngredients.value.map((recipeIngredient) => {
     const ingredient = ingredients.value.find(
@@ -285,17 +297,20 @@ const ingredientChecklist = computed(() => {
   })
 })
 
+// Pasos de la receta ordenados por su índice
 const orderedRecipeSteps = computed(() => {
   return [...recipeSteps.value].sort((a, b) => Number(a.orderIndex) - Number(b.orderIndex))
 })
 
 // ── Navigation ────────────────────────────────────────────────
 
+// Redirige a la vista de cocina para empezar a cocinar esta receta
 function startCooking() {
   if (!recipe.value?.id) return
   router.push({ name: 'cooking', params: { id: recipe.value.id } })
 }
 
+// Navega al perfil del autor de la receta
 function goToAuthorProfile() {
   if (!authorId.value) return
 
@@ -312,6 +327,7 @@ function goToAuthorProfile() {
 
 // ── Actions ───────────────────────────────────────────────────
 
+// Alterna el like del usuario en esta receta
 async function toggleRecipeLike() {
   const recipeId = Number(recipe.value?.id)
 
@@ -347,6 +363,7 @@ async function toggleRecipeLike() {
   }
 }
 
+// Sigue o deja de seguir al autor de la receta
 async function toggleFollowAuthor() {
   if (!currentUserId.value || !authorId.value || isOwnRecipe.value) return
 
@@ -372,6 +389,7 @@ async function toggleFollowAuthor() {
 
 // ── Load ──────────────────────────────────────────────────────
 
+// Carga todos los datos de la receta: autor, likes, ingredientes, pasos y estado de seguimiento
 async function loadRecipeDetail() {
   detailLoading.value = true
   detailError.value = ''
@@ -413,6 +431,7 @@ async function loadRecipeDetail() {
     recipeIngredients.value = recipeIngredientsResponse.status === 'fulfilled' ? recipeIngredientsResponse.value.data || [] : []
     recipeSteps.value = stepsResponse.status === 'fulfilled' ? stepsResponse.value.data || [] : []
     const followData = followsResponse.status === 'fulfilled' ? followsResponse.value?.data : null
+    // Solo consideramos que sigue al autor si el estado es 'accepted'
     currentUserFollowsAuthor.value = followData != null && followData.status === 'accepted'
     checkedIngredients.value = []
 

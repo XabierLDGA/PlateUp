@@ -216,34 +216,44 @@ const props = defineProps({
 const router = useRouter()
 const authStore = useAuthStore()
 
+// Estado de carga, error, seguimiento y pestaña activa
 const loading = ref(true)
 const errorMessage = ref('')
 const followLoading = ref(false)
 const activeTab = ref('recipes')
 
+// Datos del usuario visitado
 const visitedUser = ref(null)
 const userRecipes = ref([])
 const achievements = ref([])
 const userAchievements = ref([])
+
+// Contadores de seguidores y seguidos del usuario visitado
 const followersCount = ref(0)
 const followingCount = ref(0)
+
+// Indica si el usuario logueado sigue al usuario visitado
 const currentUserFollowsVisited = ref(false)
 
+// IDs numéricos del usuario visitado y del usuario logueado
 const numericUserId = computed(() => Number(props.id))
 const currentUserId = computed(() => Number(authStore.currentUser?.id || 0))
 
 const userAvatar = computed(() => getUserAvatar(visitedUser.value))
 
+// Indica si el perfil visitado es el propio del usuario logueado
 const isOwnProfile = computed(() => {
   return currentUserId.value > 0 && numericUserId.value === currentUserId.value
 })
 
 const isFollowingVisitedUser = computed(() => currentUserFollowsVisited.value)
 
+// El libro de recetas y los logros solo se muestran si el usuario es el propietario o lo sigue
 const canViewRecipeBook = computed(() => {
   return isOwnProfile.value || isFollowingVisitedUser.value
 })
 
+// Lista de logros conseguidos por el usuario visitado
 const earnedAchievements = computed(() => {
   if (!numericUserId.value) return []
 
@@ -264,6 +274,7 @@ function resolveRecipeImage(recipe) {
   return getRecipeImage(recipe)
 }
 
+// Navega al perfil del usuario visitado (o al propio si coincide)
 function goToVisitedUserProfile() {
   if (!numericUserId.value) return
 
@@ -278,6 +289,7 @@ function goToVisitedUserProfile() {
   })
 }
 
+// Abre la vista de conexiones del usuario visitado en la pestaña indicada
 function openConnections(tab) {
   if (!numericUserId.value) return
 
@@ -288,6 +300,7 @@ function openConnections(tab) {
   })
 }
 
+// Sigue o deja de seguir al usuario visitado y actualiza el contador de seguidores
 async function toggleFollow() {
   if (!currentUserId.value || !numericUserId.value || isOwnProfile.value) return
 
@@ -313,6 +326,7 @@ async function toggleFollow() {
   }
 }
 
+// Carga el perfil completo del usuario visitado: recetas, seguidores, logros y relación de seguimiento
 async function loadUserProfile() {
   loading.value = true
   errorMessage.value = ''
@@ -347,6 +361,7 @@ async function loadUserProfile() {
       followService.getFollowing(userId),
       achievementService.getAll(),
       userAchievementService.getByUserId(userId),
+      // Solo consultamos la relación de seguimiento si no es el propio perfil
       !ownProfile && currentUserId.value
         ? followService.getById(currentUserId.value, userId)
         : Promise.resolve({ data: null }),
@@ -364,6 +379,7 @@ async function loadUserProfile() {
     userAchievements.value = userAchievementsResponse.status === 'fulfilled' ? userAchievementsResponse.value.data || [] : []
 
     const followData = currentFollowResponse.status === 'fulfilled' ? currentFollowResponse.value?.data : null
+    // Solo se considera que sigue al usuario si el estado es 'accepted'
     currentUserFollowsVisited.value = followData != null && followData.status === 'accepted'
   } catch (error) {
     console.error('Error loading visited user profile:', error)
@@ -379,6 +395,7 @@ async function loadUserProfile() {
 
 onMounted(loadUserProfile)
 
+// Recarga el perfil cuando se navega a otro usuario sin recargar la página
 watch(
   () => props.id,
   () => {

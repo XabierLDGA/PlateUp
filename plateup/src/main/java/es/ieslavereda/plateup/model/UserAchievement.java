@@ -3,19 +3,23 @@ package es.ieslavereda.plateup.model;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
+// Registra qué logros ha conseguido cada usuario y en qué momento los desbloqueó
 @Entity
 @Table(name = "UserAchievements")
 @IdClass(UserAchievementId.class)
 public class UserAchievement {
 
+    // Clave compuesta: cada usuario solo puede tener una vez cada logro
     @Id
     private Long user_id;
 
     @Id
     private Long achievement_id;
 
+    // Nivel alcanzado dentro del logro, para aquellos logros que tienen varias etapas de progreso
     private int level;
 
+    // Fecha y hora exactas en que el usuario ganó el logro; se establece automáticamente por la base de datos
     @Column(columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
     private LocalDateTime earned_at;
 

@@ -262,6 +262,7 @@ import {
 
 const authStore = useAuthStore()
 
+// Estado del formulario: mensajes, publicación en curso e imagen seleccionada
 const message = ref('')
 const messageType = ref('success')
 const publishing = ref(false)
@@ -269,6 +270,7 @@ const recipeFileInputRef = ref(null)
 const selectedRecipeImageFile = ref(null)
 const recipePreviewUrl = ref('')
 
+// Datos reactivos del formulario de creación de receta
 const form = ref({
   title: '',
   description: '',
@@ -280,10 +282,12 @@ const form = ref({
   steps: [{ text: '' }],
 })
 
+// Añade una fila vacía a la lista de ingredientes
 function addIngredient() {
   form.value.ingredients.push({ name: '', quantity: null, unit: '' })
 }
 
+// Elimina un ingrediente por su índice, dejando siempre al menos uno vacío
 function removeIngredient(index) {
   form.value.ingredients.splice(index, 1)
 
@@ -292,10 +296,12 @@ function removeIngredient(index) {
   }
 }
 
+// Añade un paso vacío a la lista de pasos
 function addStep() {
   form.value.steps.push({ text: '' })
 }
 
+// Elimina un paso por su índice, dejando siempre al menos uno vacío
 function removeStep(index) {
   form.value.steps.splice(index, 1)
 
@@ -304,12 +310,14 @@ function removeStep(index) {
   }
 }
 
+// Libera la URL temporal de previsualización de la imagen para evitar fugas de memoria
 function revokeRecipePreviewUrl() {
   if (recipePreviewUrl.value && recipePreviewUrl.value.startsWith('blob:')) {
     URL.revokeObjectURL(recipePreviewUrl.value)
   }
 }
 
+// Elimina la imagen seleccionada y limpia el input de archivo
 function removeRecipeImage() {
   revokeRecipePreviewUrl()
   selectedRecipeImageFile.value = null
@@ -320,10 +328,12 @@ function removeRecipeImage() {
   }
 }
 
+// Abre el selector de archivos del navegador
 function openImagePicker() {
   recipeFileInputRef.value?.click()
 }
 
+// Valida el archivo seleccionado y genera una URL de previsualización
 function handleRecipeImageChange(event) {
   const file = event.target.files?.[0]
   message.value = ''
@@ -352,6 +362,7 @@ function handleRecipeImageChange(event) {
   recipePreviewUrl.value = URL.createObjectURL(file)
 }
 
+// Resetea el formulario a su estado inicial tras publicar con éxito
 function resetForm() {
   form.value = {
     title: '',
@@ -367,6 +378,7 @@ function resetForm() {
   removeRecipeImage()
 }
 
+// Busca un ingrediente existente por nombre o lo crea si no existe aún
 async function findOrCreateIngredient(rawIngredient, existingIngredients) {
   const normalizedName = rawIngredient.name.trim().toLowerCase()
 
@@ -389,6 +401,7 @@ async function findOrCreateIngredient(rawIngredient, existingIngredients) {
   return existing
 }
 
+// Publica la receta: sube la imagen, crea la receta, sus ingredientes y sus pasos
 async function publishRecipe() {
   if (publishing.value) return
 
@@ -398,6 +411,7 @@ async function publishRecipe() {
   try {
     await authStore.initialize()
 
+    // Filtramos los ingredientes y pasos que tengan contenido real
     const validIngredients = form.value.ingredients.filter(
       (ingredient) => ingredient.name.trim() !== ''
     )
@@ -475,6 +489,7 @@ async function publishRecipe() {
   }
 }
 
+// Limpia la URL de previsualización al desmontar el componente
 onBeforeUnmount(() => {
   revokeRecipePreviewUrl()
 })

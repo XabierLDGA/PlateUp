@@ -87,6 +87,7 @@
 </template>
 
 <script setup>
+// Tarjeta de receta: muestra la info resumida de una receta en los listados y el explorador
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { Heart } from 'lucide-vue-next'
@@ -98,6 +99,7 @@ import { normalizeRecipeCategory } from '../../utils/recipeCategories'
 const router = useRouter()
 const authStore = useAuthStore()
 
+// Props que recibe la tarjeta desde el componente padre
 const props = defineProps({
   recipe: {
     type: Object,
@@ -123,22 +125,27 @@ const props = defineProps({
 
 const emit = defineEmits(['toggle-like'])
 
+// Datos calculados a partir de las props: imagen, categoría, likes y datos del autor
 const coverImage = computed(() => getRecipeImage(props.recipe))
 const recipeCategory = computed(() => normalizeRecipeCategory(props.recipe?.category))
 const recipeLikes = computed(() => props.likesCount)
 
+// Si no hay autor disponible, mostramos valores por defecto para no dejar campos vacíos
 const authorName = computed(() => props.author?.displayName || 'PlateUp Chef')
 const authorUsername = computed(() => props.author?.username || 'plateup')
 const authorAvatar = computed(() => getUserAvatar(props.author))
 
+// El id del autor puede venir del objeto author o directamente de la receta
 const authorId = computed(() => {
   return props.author?.id ?? props.recipe?.userId ?? null
 })
 
+// Propagamos el evento de like al componente padre para que gestione la lógica
 function emitToggleLike() {
   emit('toggle-like', props.recipe)
 }
 
+// Navega al perfil del autor; si es el usuario actual, redirige a su propio perfil
 function goToAuthorProfile() {
   if (!authorId.value) return
 

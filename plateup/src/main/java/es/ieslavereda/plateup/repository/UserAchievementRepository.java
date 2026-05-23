@@ -12,6 +12,7 @@ import java.util.List;
 
 public interface UserAchievementRepository extends JpaRepository<UserAchievement, UserAchievementId> {
 
+    // Comprueba si un usuario ya tiene un logro concreto para evitar asignarlo dos veces
     @Query("""
         SELECT CASE WHEN COUNT(ua) > 0 THEN true ELSE false END
         FROM UserAchievement ua
@@ -23,6 +24,7 @@ public interface UserAchievementRepository extends JpaRepository<UserAchievement
             @Param("achievementId") Long achievementId
     );
 
+    // Devuelve todos los logros que ha desbloqueado un usuario
     @Query("""
         SELECT ua
         FROM UserAchievement ua
@@ -30,6 +32,7 @@ public interface UserAchievementRepository extends JpaRepository<UserAchievement
     """)
     List<UserAchievement> findByUser_id(@Param("userId") Long userId);
 
+    // Elimina todos los logros de un usuario, por ejemplo al borrar su cuenta
     @Modifying
     @Transactional
     @Query("""

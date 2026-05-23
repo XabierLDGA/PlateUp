@@ -155,36 +155,44 @@ import { getUserAvatar } from '../utils/userAvatar'
 const router = useRouter()
 const authStore = useAuthStore()
 
+// Estado del selector de imagen de perfil
 const fileInputRef = ref(null)
 const selectedFile = ref(null)
 const previewUrl = ref('')
 const savingAvatar = ref(false)
 const avatarErrorMessage = ref('')
 const avatarSuccessMessage = ref('')
+
+// Estado del modal de confirmación para eliminar la cuenta
 const showDeleteModal = ref(false)
 const deleteConfirmation = ref('')
 const deletingAccount = ref(false)
 const deleteErrorMessage = ref('')
 
+// Usuario actual y previsualización del avatar (usa la URL temporal si hay una pendiente)
 const currentUser = computed(() => authStore.currentUser)
 const avatarPreview = computed(() => previewUrl.value || getUserAvatar(currentUser.value))
 
+// Navega de vuelta al perfil del usuario
 function goBack() {
   router.push({ name: 'profile' })
 }
 
+// Abre el selector de archivos para elegir una nueva foto de perfil
 function openFilePicker() {
   avatarErrorMessage.value = ''
   avatarSuccessMessage.value = ''
   fileInputRef.value?.click()
 }
 
+// Libera la URL temporal de previsualización del avatar
 function revokePreviewUrl() {
   if (previewUrl.value && previewUrl.value.startsWith('blob:')) {
     URL.revokeObjectURL(previewUrl.value)
   }
 }
 
+// Limpia la imagen seleccionada y resetea los mensajes
 function resetSelectedImage() {
   revokePreviewUrl()
   selectedFile.value = null
@@ -197,6 +205,7 @@ function resetSelectedImage() {
   }
 }
 
+// Valida el archivo de imagen elegido y lo sube automáticamente si es válido
 async function handleFileChange(event) {
   const file = event.target.files?.[0]
   avatarErrorMessage.value = ''
@@ -226,6 +235,7 @@ async function handleFileChange(event) {
   await saveAvatar()
 }
 
+// Sube el avatar al servidor y actualiza el perfil del usuario en el store
 async function saveAvatar() {
   if (!currentUser.value?.id || !selectedFile.value) return
 
@@ -257,6 +267,7 @@ async function saveAvatar() {
   }
 }
 
+// Cierra el modal de eliminar cuenta si no hay una eliminación en curso
 function closeDeleteModal() {
   if (deletingAccount.value) return
 
@@ -265,6 +276,7 @@ function closeDeleteModal() {
   deleteErrorMessage.value = ''
 }
 
+// Elimina la cuenta del usuario, cierra sesión y redirige al login
 async function deleteAccount() {
   if (!currentUser.value?.id || deletingAccount.value) return
 
@@ -285,6 +297,7 @@ async function deleteAccount() {
   }
 }
 
+// Limpia la URL temporal al desmontar el componente
 onBeforeUnmount(() => {
   revokePreviewUrl()
 })

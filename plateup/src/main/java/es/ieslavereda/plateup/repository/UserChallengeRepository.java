@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 
 public interface UserChallengeRepository extends JpaRepository<UserChallenge, UserChallengeId> {
 
+    // Elimina todos los retos de un usuario, necesario al borrar su cuenta para no dejar huérfanos
     @Modifying
     @Transactional
     @Query("DELETE FROM UserChallenge uc WHERE uc.user_id = :userId")

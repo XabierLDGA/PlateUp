@@ -11,11 +11,13 @@ import java.util.Collection;
 
 public interface CollectionRecipeRepository extends JpaRepository<CollectionRecipe, CollectionRecipeId> {
 
+    // Elimina todas las recetas asociadas a una lista de colecciones, por ejemplo al borrar esas colecciones
     @Modifying
     @Transactional
     @Query("DELETE FROM CollectionRecipe cr WHERE cr.collection_id IN :collectionIds")
     void deleteByCollectionIds(Collection<Long> collectionIds);
 
+    // Elimina las entradas de colecciones que apuntan a una lista de recetas, por ejemplo al borrar esas recetas
     @Modifying
     @Transactional
     @Query("DELETE FROM CollectionRecipe cr WHERE cr.recipe_id IN :recipeIds")

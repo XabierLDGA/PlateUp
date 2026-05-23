@@ -15,6 +15,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
     boolean existsByUsername(String username);
     boolean existsByEmail(String email);
 
+    // Agrupa el número de registros de usuarios por mes a partir de una fecha dada, para mostrar la gráfica de crecimiento en el panel de admin
     @Query(value = "SELECT DATE_FORMAT(created_at, '%Y-%m') as month, COUNT(*) as total " +
                    "FROM Users WHERE created_at >= :since " +
                    "GROUP BY month ORDER BY month ASC", nativeQuery = true)

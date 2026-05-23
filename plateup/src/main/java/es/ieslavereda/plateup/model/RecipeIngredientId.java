@@ -3,6 +3,8 @@ package es.ieslavereda.plateup.model;
 import java.io.Serializable;
 import java.util.Objects;
 
+// Clase auxiliar para la clave compuesta de RecipeIngredient, aunque en la entidad se usa id autogenerado
+// Se mantiene por compatibilidad con la configuración de JPA
 public class RecipeIngredientId implements Serializable {
 
     private Long recipeId;
@@ -15,6 +17,7 @@ public class RecipeIngredientId implements Serializable {
         this.ingredientId = ingredientId;
     }
 
+    // equals y hashCode son obligatorios en las claves compuestas para que JPA pueda compararlas correctamente
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

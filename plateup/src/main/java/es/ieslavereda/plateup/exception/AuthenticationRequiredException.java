@@ -3,6 +3,7 @@ package es.ieslavereda.plateup.exception;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
+// Excepción que se lanza cuando se intenta realizar una acción que requiere estar autenticado
 @ResponseStatus(HttpStatus.UNAUTHORIZED)
 public class AuthenticationRequiredException extends RuntimeException {
     public AuthenticationRequiredException(String message) {

@@ -1,5 +1,6 @@
 import { resolveMediaUrl } from './media'
 
+// Genera una imagen SVG de sustitución con el nombre de la receta cuando no hay foto disponible
 function buildRecipeFallback(recipe) {
   const title = recipe?.title?.trim() || 'PlateUp Recipe'
 
@@ -33,9 +34,12 @@ function buildRecipeFallback(recipe) {
     </svg>
   `.trim()
 
+  // Codificamos el SVG como Data URL para poder usarlo directamente en un atributo src
   return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`
 }
 
+// Devuelve la URL de la imagen de una receta.
+// Si la receta tiene imagen propia la resuelve; si no, genera una imagen de sustitución con el título.
 export function getRecipeImage(recipe) {
   if (recipe?.imageUrl && recipe.imageUrl.trim() !== '') {
     return resolveMediaUrl(recipe.imageUrl)

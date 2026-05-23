@@ -9,6 +9,7 @@ import java.util.List;
 
 public interface IngredientRepository extends JpaRepository<Ingredient, Long> {
 
+    // Obtiene los ingredientes de una receta concreta usando la tabla intermedia RecipeIngredient
     @Query("SELECT i FROM Ingredient i WHERE i.id IN (SELECT ri.ingredientId FROM RecipeIngredient ri WHERE ri.recipeId = :recipeId)")
     List<Ingredient> findByRecipeId(@Param("recipeId") Long recipeId);
 }

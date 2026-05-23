@@ -205,6 +205,7 @@ const router = useRouter()
 const authStore = useAuthStore()
 
 // ── State ────────────────────────────────────────────────────
+// Datos de la receta y sus ingredientes y pasos
 const recipe = ref(null)
 const ingredients = ref([])
 const recipeIngredients = ref([])
@@ -214,6 +215,7 @@ const error = ref('')
 const saving = ref(false)
 const showSuccess = ref(false)
 
+// Listas de ingredientes y pasos marcados como completados
 const checkedIngredients = ref([])
 const checkedSteps = ref([])
 
@@ -222,6 +224,7 @@ const elapsed = ref(0)   // seconds
 const timerRunning = ref(true)
 let timerInterval = null
 
+// Inicia el cronómetro si no está ya corriendo
 function startTimer() {
     if (timerInterval) return
     timerInterval = setInterval(() => {
@@ -229,15 +232,18 @@ function startTimer() {
     }, 1000)
 }
 
+// Pausa o reanuda el cronómetro
 function toggleTimer() {
     timerRunning.value = !timerRunning.value
 }
 
+// Detiene y limpia el intervalo del cronómetro
 function stopTimer() {
     clearInterval(timerInterval)
     timerInterval = null
 }
 
+// Formatea los segundos del cronómetro en formato mm:ss o hh:mm:ss
 const formattedTime = computed(() => {
     const h = Math.floor(elapsed.value / 3600)
     const m = Math.floor((elapsed.value % 3600) / 60)
@@ -250,10 +256,12 @@ const formattedTime = computed(() => {
 const currentUserId = computed(() => Number(authStore.currentUser?.id || 0))
 const recipeImage = computed(() => getRecipeImage(recipe.value))
 
+// Pasos de la receta ordenados por su índice
 const orderedSteps = computed(() =>
     [...recipeSteps.value].sort((a, b) => Number(a.orderIndex) - Number(b.orderIndex))
 )
 
+// Construye la lista de ingredientes con nombre, cantidad y notas para mostrar en pantalla
 const ingredientChecklist = computed(() =>
     recipeIngredients.value.map((ri) => {
         const ing = ingredients.value.find((i) => Number(i.id) === Number(ri.ingredientId))
@@ -269,22 +277,26 @@ const ingredientChecklist = computed(() =>
     })
 )
 
+// Calcula el porcentaje de pasos completados para la barra de progreso
 const progressPercent = computed(() => {
     if (!orderedSteps.value.length) return 0
     return Math.round((checkedSteps.value.length / orderedSteps.value.length) * 100)
 })
 
+// Indica si todos los pasos están marcados como completados
 const allStepsDone = computed(() =>
     orderedSteps.value.length > 0 &&
     checkedSteps.value.length === orderedSteps.value.length
 )
 
 // ── Helpers ──────────────────────────────────────────────────
+// Genera una clave única para identificar cada paso en la lista de checks
 function stepKey(step) {
     return `step-${step.id || step.orderIndex}`
 }
 
 // ── Actions ──────────────────────────────────────────────────
+// Guarda la receta cocinada con el tiempo transcurrido y muestra la pantalla de éxito
 async function finishCooking() {
     if (!currentUserId.value || !recipe.value?.id || saving.value) return
 
@@ -306,11 +318,13 @@ async function finishCooking() {
     }
 }
 
+// Redirige al perfil del usuario
 function goToProfile() {
     router.push({ name: 'profile' })
 }
 
 // ── Load ─────────────────────────────────────────────────────
+// Carga la receta, sus ingredientes y pasos, y arranca el cronómetro
 async function load() {
     loading.value = true
     error.value = ''
