@@ -1,3 +1,4 @@
+SET FOREIGN_KEY_CHECKS = 0;
 -- ===========================================
 -- Base de datos: PlateUp
 -- Script corregido y consistente con backend/frontend
@@ -7,14 +8,13 @@
 SET NAMES utf8mb4;
 
 -- Recreamos la base de datos desde cero con soporte completo para emojis y caracteres especiales
-DROP DATABASE IF EXISTS plateup;
-CREATE DATABASE plateup CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-USE plateup;
+USE railway;
 
 -- ===========================================
 -- USERS
 -- ===========================================
 -- Tabla de usuarios: incluye perfil, credenciales, racha de actividad y rol (USER/ADMIN)
+DROP TABLE IF EXISTS Users;
 CREATE TABLE Users (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     username VARCHAR(50) NOT NULL UNIQUE,
@@ -34,6 +34,7 @@ CREATE TABLE Users (
 -- ===========================================
 -- RECIPES
 -- ===========================================
+DROP TABLE IF EXISTS Recipes;
 CREATE TABLE Recipes (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     user_id BIGINT NOT NULL,
@@ -52,6 +53,7 @@ CREATE TABLE Recipes (
 -- ===========================================
 -- RECIPE STEPS
 -- ===========================================
+DROP TABLE IF EXISTS RecipeSteps;
 CREATE TABLE RecipeSteps (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     recipe_id BIGINT NOT NULL,
@@ -65,6 +67,7 @@ CREATE TABLE RecipeSteps (
 -- ===========================================
 -- INGREDIENTS
 -- ===========================================
+DROP TABLE IF EXISTS Ingredients;
 CREATE TABLE Ingredients (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(100) NOT NULL UNIQUE,
@@ -74,6 +77,7 @@ CREATE TABLE Ingredients (
 -- ===========================================
 -- RECIPE INGREDIENTS
 -- ===========================================
+DROP TABLE IF EXISTS RecipeIngredients;
 CREATE TABLE RecipeIngredients (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     recipe_id BIGINT NOT NULL,
@@ -88,6 +92,7 @@ CREATE TABLE RecipeIngredients (
 -- ===========================================
 -- UTENSILS
 -- ===========================================
+DROP TABLE IF EXISTS Utensils;
 CREATE TABLE Utensils (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(100) NOT NULL UNIQUE
@@ -96,6 +101,7 @@ CREATE TABLE Utensils (
 -- ===========================================
 -- RECIPE UTENSILS
 -- ===========================================
+DROP TABLE IF EXISTS RecipeUtensils;
 CREATE TABLE RecipeUtensils (
     recipe_id BIGINT NOT NULL,
     utensil_id BIGINT NOT NULL,
@@ -107,6 +113,7 @@ CREATE TABLE RecipeUtensils (
 -- ===========================================
 -- MEDIA
 -- ===========================================
+DROP TABLE IF EXISTS Media;
 CREATE TABLE Media (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     owner_user_id BIGINT NOT NULL,
@@ -122,6 +129,7 @@ CREATE TABLE Media (
 -- ===========================================
 -- FOLLOWS
 -- ===========================================
+DROP TABLE IF EXISTS Follows;
 CREATE TABLE Follows (
     follower_id BIGINT NOT NULL,
     followed_id BIGINT NOT NULL,
@@ -135,6 +143,7 @@ CREATE TABLE Follows (
 -- ===========================================
 -- LIKES
 -- ===========================================
+DROP TABLE IF EXISTS Likes;
 CREATE TABLE Likes (
     user_id BIGINT NOT NULL,
     recipe_id BIGINT NOT NULL,
@@ -147,6 +156,7 @@ CREATE TABLE Likes (
 -- ===========================================
 -- COMMENTS
 -- ===========================================
+DROP TABLE IF EXISTS Comments;
 CREATE TABLE Comments (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     user_id BIGINT NOT NULL,
@@ -160,6 +170,7 @@ CREATE TABLE Comments (
 -- ===========================================
 -- COLLECTIONS
 -- ===========================================
+DROP TABLE IF EXISTS Collections;
 CREATE TABLE Collections (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     user_id BIGINT NOT NULL,
@@ -172,6 +183,7 @@ CREATE TABLE Collections (
 -- ===========================================
 -- COLLECTION RECIPES
 -- ===========================================
+DROP TABLE IF EXISTS CollectionRecipes;
 CREATE TABLE CollectionRecipes (
     collection_id BIGINT NOT NULL,
     recipe_id BIGINT NOT NULL,
@@ -184,6 +196,7 @@ CREATE TABLE CollectionRecipes (
 -- ===========================================
 -- ACHIEVEMENTS
 -- ===========================================
+DROP TABLE IF EXISTS Achievements;
 CREATE TABLE Achievements (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
@@ -197,6 +210,7 @@ CREATE TABLE Achievements (
 -- ===========================================
 -- USER ACHIEVEMENTS
 -- ===========================================
+DROP TABLE IF EXISTS UserAchievements;
 CREATE TABLE UserAchievements (
     user_id BIGINT NOT NULL,
     achievement_id BIGINT NOT NULL,
@@ -210,6 +224,7 @@ CREATE TABLE UserAchievements (
 -- ===========================================
 -- CHALLENGES
 -- ===========================================
+DROP TABLE IF EXISTS Challenges;
 CREATE TABLE Challenges (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
@@ -223,6 +238,7 @@ CREATE TABLE Challenges (
 -- ===========================================
 -- USER CHALLENGES
 -- ===========================================
+DROP TABLE IF EXISTS UserChallenges;
 CREATE TABLE UserChallenges (
     user_id BIGINT NOT NULL,
     challenge_id BIGINT NOT NULL,
@@ -238,6 +254,7 @@ CREATE TABLE UserChallenges (
 -- ===========================================
 -- NOTIFICATIONS
 -- ===========================================
+DROP TABLE IF EXISTS Notifications;
 CREATE TABLE Notifications (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     recipient_user_id BIGINT NOT NULL,
@@ -254,6 +271,7 @@ CREATE TABLE Notifications (
 -- ===========================================
 -- REPORTS
 -- ===========================================
+DROP TABLE IF EXISTS Reports;
 CREATE TABLE Reports (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     reporter_user_id BIGINT NOT NULL,
@@ -269,6 +287,7 @@ CREATE TABLE Reports (
 -- ===========================================
 -- AUDIT LOGS
 -- ===========================================
+DROP TABLE IF EXISTS AuditLogs;
 CREATE TABLE AuditLogs (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     actor_user_id BIGINT,
@@ -283,6 +302,7 @@ CREATE TABLE AuditLogs (
 -- COOKED RECIPES
 -- ===========================================
 -- Registra qué recetas ha cocinado cada usuario y cuánto tiempo tardó
+DROP TABLE IF EXISTS CookedRecipes;
 CREATE TABLE CookedRecipes (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     user_id BIGINT NOT NULL,
