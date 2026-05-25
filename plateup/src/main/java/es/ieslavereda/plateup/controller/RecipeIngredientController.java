@@ -84,7 +84,6 @@ public class RecipeIngredientController {
         return ResponseEntity.ok().build();
     }
 
-    // Obtiene el usuario autenticado a partir del contexto de seguridad de Spring
     private User getAuthenticatedUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 

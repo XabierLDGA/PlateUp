@@ -4,21 +4,17 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import java.time.LocalDateTime;
 
-// Representa una receta publicada por un usuario en la plataforma
 @Entity
 @Table(name = "Recipes")
 public class Recipe {
 
-    // Identificador único de la receta
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // Usuario que ha publicado la receta
     @Column(name = "user_id")
     private Long userId;
 
-    // Información principal que ve cualquier usuario al explorar la receta
     @NotBlank(message = "Title is required")
     private String title;
     private String description;
@@ -28,7 +24,6 @@ public class Recipe {
     @Column(name = "image_url")
     private String imageUrl;
 
-    // Datos de preparación: raciones, tiempo total en minutos y nivel de dificultad
     private int servings;
 
     @Column(name = "total_minutes")
@@ -36,7 +31,6 @@ public class Recipe {
 
     private String difficulty;
 
-    // Fechas de creación y última modificación de la receta
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 

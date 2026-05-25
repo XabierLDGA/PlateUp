@@ -6,17 +6,14 @@ import jakarta.persistence.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-// Representa un usuario registrado en la plataforma PlateUp
 @Entity
 @Table(name = "Users")
 public class User {
 
-    // Identificador único del usuario en la base de datos
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // Credenciales de acceso y datos básicos de la cuenta
     private String username;
     private String email;
 
@@ -25,7 +22,6 @@ public class User {
     @Column(name = "password_hash")
     private String passwordHash;
 
-    // Información del perfil que ven otros usuarios
     @Column(name = "display_name")
     private String displayName;
 
@@ -34,25 +30,23 @@ public class User {
     @Column(name = "avatar_url")
     private String avatarUrl;
 
-    // Visibilidad por defecto de las recetas y colecciones que publique este usuario
     @Column(name = "visibility_default")
     private String visibilityDefault;
 
-    // Fechas de registro y última modificación del perfil
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    // Racha de días consecutivos cocinando y fecha de la última actividad, usadas para los logros de constancia
+    // Racha de días consecutivos cocinando; se usa para evaluar los logros de constancia
     @Column(name = "streak_count")
     private Integer streakCount;
 
     @Column(name = "last_active_date")
     private LocalDate lastActiveDate;
 
-    // Rol del usuario dentro de la app; por defecto es "USER", pero puede ser "ADMIN"
+    // Rol del usuario; por defecto "USER", puede ser "ADMIN"
     @Column(name = "role")
     private String role = "USER";
 

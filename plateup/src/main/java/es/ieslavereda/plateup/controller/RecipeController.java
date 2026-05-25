@@ -59,7 +59,6 @@ public class RecipeController {
     ) {
         Long userId = getAuthenticatedUser().getId();
         PageRequest pageable = PageRequest.of(page, size);
-        // Si se pasa categoría se filtra; si no, se devuelven todas las recetas del feed del usuario
         Page<Recipe> result = (category != null && !category.isBlank())
                 ? repository.findFeedForUserAndCategory(userId, category, pageable)
                 : repository.findFeedForUser(userId, pageable);
@@ -163,7 +162,6 @@ public class RecipeController {
         return ResponseEntity.ok().build();
     }
 
-    // Obtiene el usuario autenticado a partir del contexto de seguridad de Spring
     private User getAuthenticatedUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 

@@ -15,15 +15,13 @@ import java.util.Date;
 @Service
 public class JwtService {
 
-    // Clave secreta para firmar y verificar los tokens, se lee desde la configuración
     @Value("${app.jwt.secret}")
     private String secret;
 
-    // Tiempo de validez del token en milisegundos (configurado en application.properties)
+    // Tiempo de validez configurado en application.properties (por defecto 30 días)
     @Value("${app.jwt.expiration-ms}")
     private long expirationMs;
 
-    // Genera un token JWT con los datos básicos del usuario: nombre, id, email y rol
     public String generateToken(User user) {
         Instant now = Instant.now();
 
@@ -38,12 +36,10 @@ public class JwtService {
                 .compact();
     }
 
-    // Extrae el nombre de usuario almacenado como subject dentro del token
     public String extractUsername(String token) {
         return extractAllClaims(token).getSubject();
     }
 
-    // Comprueba que el token pertenece al usuario indicado y que todavía no ha caducado
     public boolean isTokenValid(String token, User user) {
         String username = extractUsername(token);
         return username != null
@@ -51,13 +47,11 @@ public class JwtService {
                 && !isTokenExpired(token);
     }
 
-    // Devuelve true si la fecha de expiración del token ya ha pasado
     private boolean isTokenExpired(String token) {
         Date expiration = extractAllClaims(token).getExpiration();
         return expiration.before(new Date());
     }
 
-    // Parsea y verifica la firma del token para obtener todos sus claims
     private Claims extractAllClaims(String token) {
         return Jwts.parser()
                 .verifyWith(getSigningKey())

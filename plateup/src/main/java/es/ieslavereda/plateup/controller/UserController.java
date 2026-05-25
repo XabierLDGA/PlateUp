@@ -41,7 +41,7 @@ import java.util.stream.Collectors;
 @CrossOrigin(origins = "*")
 public class UserController {
 
-    // Repositorios de las entidades del usuario necesarios para el borrado en cascada y otras operaciones
+    // Muchos repositorios necesarios para el borrado en cascada al eliminar un usuario
     private final UserRepository repository;
     private final RecipeRepository recipeRepository;
     private final RecipeIngredientRepository recipeIngredientRepository;
@@ -55,7 +55,6 @@ public class UserController {
     private final UserChallengeRepository userChallengeRepository;
     private final CollectionRepository collectionRepository;
     private final CollectionRecipeRepository collectionRecipeRepository;
-    // Servicios de seguridad y almacenamiento de ficheros
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final FileStorageService fileStorageService;
@@ -392,7 +391,6 @@ public class UserController {
         return ResponseEntity.ok(success("Account deleted successfully."));
     }
 
-    // Obtiene el usuario autenticado a partir del contexto de seguridad de Spring
     private User getAuthenticatedUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
@@ -431,7 +429,6 @@ public class UserController {
         return value.startsWith("$2a$") || value.startsWith("$2b$") || value.startsWith("$2y$");
     }
 
-    // Devuelve el valor entrante si no es nulo; de lo contrario, mantiene el valor actual
     private String valueOrDefault(String incomingValue, String currentValue) {
         return incomingValue != null ? incomingValue : currentValue;
     }

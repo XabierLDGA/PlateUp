@@ -20,7 +20,6 @@ import org.slf4j.LoggerFactory;
 import java.util.Collections;
 import java.util.Optional;
 
-// Filtro que se ejecuta una sola vez por petición para validar el token JWT y autenticar al usuario
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
@@ -49,13 +48,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return;
         }
 
-        // Eliminamos el prefijo "Bearer " para quedarnos solo con el token
         String token = authHeader.substring(7);
 
         try {
             String username = jwtService.extractUsername(token);
 
-            // Solo autenticamos si el token tiene usuario y aún no hay una sesión activa en el contexto
+            // Solo autenticamos si el token tiene usuario y aún no hay sesión activa en el contexto
             if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                 Optional<User> userOptional = userRepository.findByUsername(username);
 
@@ -68,7 +66,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                             );
 
                     authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                    // Registramos al usuario como autenticado en el contexto de seguridad de Spring
                     SecurityContextHolder.getContext().setAuthentication(authentication);
                 }
             }

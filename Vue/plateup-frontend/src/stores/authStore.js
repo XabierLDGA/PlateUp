@@ -2,10 +2,8 @@ import { defineStore } from 'pinia'
 import userService from '../services/userService'
 import { getStoredToken, setAuthToken } from '../services/api'
 
-// Clave con la que se guarda el usuario actual en el localStorage
 const STORAGE_KEY = 'plateup_current_user'
 
-// Normaliza el objeto de usuario recibido del backend para tener un formato consistente
 function normalizeUser(user) {
   if (!user) return null
 
@@ -15,7 +13,6 @@ function normalizeUser(user) {
 }
 
 export const useAuthStore = defineStore('auth', {
-  // Estado global de autenticación: usuario, token y flags de carga
   state: () => ({
     currentUser: null,
     authToken: null,
@@ -40,7 +37,6 @@ export const useAuthStore = defineStore('auth', {
   },
 
   actions: {
-    // Actualiza el usuario de la sesión y lo persiste en el localStorage
     setSessionUser(user) {
       const normalizedUser = normalizeUser(user)
       this.currentUser = normalizedUser
@@ -54,20 +50,17 @@ export const useAuthStore = defineStore('auth', {
       }
     },
 
-    // Actualiza el token JWT de la sesión y lo aplica a las cabeceras de la API
     setSessionToken(token) {
       this.authToken = token || null
       setAuthToken(this.authToken)
       this.isAuthenticated = Boolean(this.currentUser?.id && this.authToken)
     },
 
-    // Inicializa el store una sola vez; si ya está inicializado no hace nada
     async initialize() {
       if (this.initialized) return
       await this.loadFromStorage()
     },
 
-    // Restaura la sesión del usuario a partir de los datos guardados en el localStorage
     async loadFromStorage() {
       const rawUser = localStorage.getItem(STORAGE_KEY)
       const storedToken = getStoredToken()
@@ -158,7 +151,6 @@ export const useAuthStore = defineStore('auth', {
       }
     },
 
-    // Recarga los datos del usuario actual desde el servidor para tenerlos actualizados
     async refreshCurrentUser() {
       if (!this.currentUser?.id || !this.authToken) return null
 
@@ -174,7 +166,6 @@ export const useAuthStore = defineStore('auth', {
       return freshUser
     },
 
-    // Cierra la sesión del usuario, limpia el estado y elimina los datos del localStorage
     logout() {
       this.currentUser = null
       this.authToken = null

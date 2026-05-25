@@ -9,7 +9,6 @@
 </template>
 
 <script setup>
-// Componente raíz de la aplicación: gestiona la estructura principal y la navegación inferior
 import { computed, onMounted, onUnmounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { App as CapacitorApp } from '@capacitor/app'
@@ -27,10 +26,9 @@ const showBottomNav = computed(() => {
 
 let backButtonListener = null
 
-// Al montar la app, registramos el listener del botón físico de atrás (para Android)
+// Registra el listener del botón físico de atrás para Android
 onMounted(async () => {
   backButtonListener = await CapacitorApp.addListener('backButton', () => {
-    // Si el usuario está en una ruta raíz, cerrar la aplicación directamente
     const rootPaths = ['/', '/login', '/home', '/explore', '/create', '/profile']
 
     if (rootPaths.includes(route.path)) {
@@ -38,12 +36,10 @@ onMounted(async () => {
       return
     }
 
-    // En cualquier otra ruta, navegar hacia atrás en el historial
     window.history.back()
   })
 })
 
-// Limpiamos el listener cuando el componente se desmonta para evitar fugas de memoria
 onUnmounted(() => {
   backButtonListener?.remove()
 })

@@ -69,7 +69,6 @@ public class AchievementUnlockService {
         this.userRepository = userRepository;
     }
 
-    // Comprueba si el usuario ha desbloqueado algún logro relacionado con las recetas que ha publicado
     @Transactional
     public void checkRecipeAchievements(Long userId) {
         if (!userExists(userId)) {
@@ -80,7 +79,6 @@ public class AchievementUnlockService {
         unlockAchievementsByThreshold(userId, totalRecipes, RECIPE_ACHIEVEMENTS);
     }
 
-    // Comprueba los logros basados en los likes que han recibido las recetas del usuario
     @Transactional
     public void checkLikeAchievements(Long userId) {
         if (!userExists(userId)) {
@@ -91,7 +89,6 @@ public class AchievementUnlockService {
         unlockAchievementsByThreshold(userId, totalLikesReceived, LIKE_ACHIEVEMENTS);
     }
 
-    // Comprueba los logros por recetas que el usuario ha marcado como cocinadas
     @Transactional
     public void checkCookedAchievements(Long userId) {
         if (!userExists(userId)) {
@@ -102,7 +99,6 @@ public class AchievementUnlockService {
         unlockAchievementsByThreshold(userId, totalCookedRecipes, COOKED_ACHIEVEMENTS);
     }
 
-    // Comprueba los logros según el número de seguidores aceptados que tiene el usuario
     @Transactional
     public void checkFollowerAchievements(Long userId) {
         if (!userExists(userId)) {
@@ -114,7 +110,6 @@ public class AchievementUnlockService {
         unlockAchievementsByThreshold(userId, totalFollowers, FOLLOWER_ACHIEVEMENTS);
     }
 
-    // Lanza todas las comprobaciones de logros para un usuario de una sola vez
     @Transactional
     public void checkAllAchievementsForUser(Long userId) {
         if (!userExists(userId)) {
@@ -127,7 +122,6 @@ public class AchievementUnlockService {
         checkFollowerAchievements(userId);
     }
 
-    // Recorre todos los usuarios de la app y sincroniza sus logros (útil al arrancar o para tareas de mantenimiento)
     @Transactional
     public void syncAllUsersAchievements() {
         List<Long> userIds = userRepository.findAll()
@@ -140,7 +134,6 @@ public class AchievementUnlockService {
         }
     }
 
-    // Recorre los umbrales del mapa y desbloquea los logros que el usuario ya ha superado
     private void unlockAchievementsByThreshold(Long userId, long currentValue, Map<Long, Integer> achievementThresholds) {
         for (Map.Entry<Long, Integer> entry : achievementThresholds.entrySet()) {
             Long achievementId = entry.getKey();
@@ -168,7 +161,6 @@ public class AchievementUnlockService {
         userAchievementRepository.save(userAchievement);
     }
 
-    // Devuelve true si el usuario existe en la base de datos, para no operar con IDs inválidos
     private boolean userExists(Long userId) {
         return userId != null && userRepository.existsById(userId);
     }

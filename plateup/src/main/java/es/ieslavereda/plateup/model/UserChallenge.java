@@ -3,7 +3,6 @@ package es.ieslavereda.plateup.model;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
-// Almacena la participación de un usuario en un reto concreto y cómo va avanzando en él
 @Entity
 @Table(name = "UserChallenges")
 @IdClass(UserChallengeId.class)
@@ -16,14 +15,13 @@ public class UserChallenge {
     @Id
     private Long challenge_id;
 
-    // Porcentaje o valor numérico de progreso hacia el objetivo del reto
     private double progress;
 
-    // Estado actual del reto para este usuario: en curso, completado, fallido, etc.
+    // Estado: en curso, completado, fallido, etc.
     private String status;
 
-    // Fecha en que el usuario se apuntó al reto y fecha en que lo terminó (nula si aún no ha acabado)
     private LocalDateTime started_at;
+    // Nula mientras el reto sigue activo
     private LocalDateTime finished_at;
 
     // Getters y setters
